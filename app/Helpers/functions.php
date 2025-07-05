@@ -212,3 +212,46 @@ function get_string_between($string, $start, $end){
 function hasRole($roles, $team){
     return auth()->user()->hasRole($roles, $team);
 }
+function fase($tingkat){
+    $fase = 'F';
+    if($tingkat == 10){
+        $fase = 'E';
+    }
+    if($tingkat == 1 || $tingkat == 2){
+        $fase = 'A';
+    }
+    if($tingkat == 3 || $tingkat == 4){
+        $fase = 'B';
+    }
+    if($tingkat == 5 || $tingkat == 6){
+        $fase = 'C';
+    }
+    if($tingkat == 7 || $tingkat == 8 || $tingkat == 9){
+        $fase = 'D';
+    }
+    return $fase;
+}
+function tingkat($fase){
+    $tingkat = [12];
+    if($fase == 'A'){
+        $tingkat = [1, 2];
+    }
+    if($fase == 'B'){
+        $tingkat = [3, 4];
+    }
+    if($fase == 'C'){
+        $tingkat = [5, 6];
+    }
+    if($fase == 'D'){
+        $tingkat = [7, 8, 9];
+    }
+    if($fase == 'E'){
+        $tingkat = [10];
+    }
+    return $tingkat;
+}
+function clean($string){
+    $string = str_replace(' ', '-', $string); // Replaces all spaces with hyphens.
+    $string = preg_replace('/[^A-Za-z0-9\-]/', '', $string); // Removes special chars.
+    return preg_replace('/-+/', '-', $string); // Replaces multiple hyphens with single one.
+}

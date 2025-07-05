@@ -11,41 +11,26 @@ definePage({
   meta: {
     layout: 'blank',
     public: true,
+    title: 'Laman tidak ditemukan!',
   },
 })
 </script>
 
 <template>
   <div class="misc-wrapper">
-    <ErrorHeader
-      status-code="404"
-      title="Laman tidak ditemukan ⚠️"
-      description="Kami tidak dapat menemukan halaman yang Anda cari."
-    />
+    <ErrorHeader status-code="404" title="Laman tidak ditemukan ⚠️"
+      description="Kami tidak dapat menemukan halaman yang Anda cari." />
 
-    <VBtn
-      to="/"
-      class="mb-11"
-    >
+    <VBtn to="/" class="mb-11">
       Kembali ke Beranda
     </VBtn>
 
     <!-- 👉 Image -->
     <div class="misc-avatar w-100 text-center">
-      <VImg
-        :src="misc404"
-        alt="error 404"
-        :max-height="$vuetify.display.smAndDown ? 350 : 500"
-        class="mx-auto"
-      />
+      <VImg :src="misc404" alt="error 404" :max-height="$vuetify.display.smAndDown ? 350 : 500" class="mx-auto" />
     </div>
 
-    <img
-      class="misc-footer-img d-none d-md-block"
-      :src="authThemeMask"
-      alt="misc-footer-img"
-      height="320"
-    >
+    <img class="misc-footer-img d-none d-md-block" :src="authThemeMask" alt="misc-footer-img" height="320">
   </div>
 </template>
 

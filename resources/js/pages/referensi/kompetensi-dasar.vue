@@ -170,7 +170,7 @@ const changeRombel = async (val) => {
       onResponse({ response }) {
         let getData = response._data
         loadingMapel.value = false
-        data_mapel.value = getData
+        data_mapel.value = getData.mapel
       }
     })
   } else {
@@ -325,13 +325,10 @@ const changeFormRombel = async (val) => {
       body: mergedForm,
       onResponse({ response }) {
         let getData = response._data
-        dataMapel.value = getData
+        dataMapel.value = getData.mapel
       }
     })
   }
-}
-const changeFormMapel = async (val) => {
-  //
 }
 </script>
 
@@ -341,6 +338,7 @@ const changeFormMapel = async (val) => {
       <VCardItem class="pb-4">
         <VCardTitle>Referensi Kompetensi Dasar</VCardTitle>
       </VCardItem>
+      <VDivider />
       <VCardText>
         <VRow>
           <VCol cols="12" sm="4">
@@ -359,7 +357,6 @@ const changeFormMapel = async (val) => {
           </VCol>
         </VRow>
       </VCardText>
-      <VDivider />
       <VCardText class="d-flex flex-wrap gap-4">
         <div class="me-3 d-flex gap-3">
           <AppSelect v-model="options.itemsPerPage" :items="[
@@ -500,9 +497,9 @@ const changeFormMapel = async (val) => {
                 </VCol>
                 <VCol cols="12" md="9">
                   <AppSelect v-model="form.mata_pelajaran_id" placeholder="== Pilih Mata Pelajaran =="
-                    :items="dataMapel" clearable clear-icon="tabler-x" @update:model-value="changeFormMapel"
-                    item-value="mata_pelajaran_id" item-title="nama_mata_pelajaran" :loading="loadingMapel"
-                    :disabled="loadingMapel" :error-messages="errors.mata_pelajaran_id" />
+                    :items="dataMapel" clearable clear-icon="tabler-x" item-value="mata_pelajaran_id"
+                    item-title="nama_mata_pelajaran" :loading="loadingMapel" :disabled="loadingMapel"
+                    :error-messages="errors.mata_pelajaran_id" />
                 </VCol>
               </VRow>
             </VCol>

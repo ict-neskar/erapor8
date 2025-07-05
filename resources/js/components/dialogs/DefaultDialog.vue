@@ -25,9 +25,6 @@ const emit = defineEmits([
   'update:isDialogVisible',
   'confirm',
 ])
-const updateModelValue = val => {
-  emit('update:isDialogVisible', val)
-}
 const onConfirmation = () => {
   emit('confirm', true)
   confirmed.value = true
@@ -49,8 +46,8 @@ watch(props, () => {
 
 <template>
   <VDialog scrollable content-class="scrollable-dialog" :max-width="props.dialogWith"
-    :model-value="props.isDialogVisible" @update:model-value="updateModelValue">
-    <DialogCloseBtn @click="updateModelValue(false)" />
+    :model-value="props.isDialogVisible" @update:model-value="onCancel">
+    <DialogCloseBtn @click="onCancel" />
     <VCard>
       <VCardItem class="pb-5">
         <VCardTitle>{{ props.dialogTitle }}</VCardTitle>

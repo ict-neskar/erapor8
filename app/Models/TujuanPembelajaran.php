@@ -20,4 +20,19 @@ class TujuanPembelajaran extends Model
     {
         return $this->belongsTo(KompetensiDasar::class, 'kd_id', 'kompetensi_dasar_id');
     }
+    public function tp_mapel()
+    {
+        return $this->hasManyThrough(
+            Pembelajaran::class,
+            TpMapel::class,
+            'tp_id',
+            'pembelajaran_id',
+            'tp_id',
+            'pembelajaran_id'
+        );
+    }
+    public function tp_pkl()
+    {
+        return $this->hasOne(TpPkl::class, 'tp_id', 'tp_id');
+    }
 }

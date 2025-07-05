@@ -92,7 +92,17 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::group(['prefix' => 'kompetensi-dasar'], function () {
             Route::get('/', [ReferensiController::class, 'kompetensi_dasar']);
             Route::post('/save', [ReferensiController::class, 'save_kd']);
-            Route::post('/update', [ReferensiController::class, 'update']);
+            Route::post('/update', [ReferensiController::class, 'update_kd']);
+        });
+        Route::group(['prefix' => 'capaian-pembelajaran'], function () {
+            Route::get('/', [ReferensiController::class, 'capaian_pembelajaran']);
+            Route::post('/save', [ReferensiController::class, 'save_cp']);
+            Route::post('/update', [ReferensiController::class, 'update_cp']);
+        });
+        Route::group(['prefix' => 'tujuan-pembelajaran'], function () {
+            Route::get('/', [ReferensiController::class, 'tujuan_pembelajaran']);
+            Route::post('/delete', [ReferensiController::class, 'hapus_tp']);
+            Route::post('/save', [ReferensiController::class, 'save_tp']);
         });
     });
 });

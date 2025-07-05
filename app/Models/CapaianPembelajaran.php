@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class CapaianPembelajaran extends Model
 {
     public $incrementing = false;
-	public $timestamps = false;
+	//public $timestamps = false;
 	protected $table = 'ref.capaian_pembelajaran';
 	protected $primaryKey = 'cp_id';
 	protected $guarded = [];
