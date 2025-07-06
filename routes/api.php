@@ -104,5 +104,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
             Route::post('/delete', [ReferensiController::class, 'hapus_tp']);
             Route::post('/save', [ReferensiController::class, 'save_tp']);
         });
+        Route::group(['prefix' => 'bobot-penilaian'], function () {
+            Route::get('/', [ReferensiController::class, 'bobot_penilaian']);
+            Route::post('/', [ReferensiController::class, 'bobot_penilaian']);
+        });
     });
 });

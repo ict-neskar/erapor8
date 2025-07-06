@@ -15,6 +15,8 @@ use App\Models\Pembelajaran;
 use App\Models\CapaianPembelajaran;
 use App\Models\TujuanPembelajaran;
 use App\Models\TpMapel;
+use App\Models\JurusanSp;
+use App\Models\Kurikulum;
 use App\Imports\TemplateTp;
 use Storage;
 
@@ -348,6 +350,19 @@ class ReferensiController extends Controller
                 'cp' => $data_cp,
                 'kd' => $data_kd,
             ];
+        }
+        if(request()->data == 'jurusan'){
+            $data = JurusanSp::where(function($query){
+                $query->where('sekolah_id', request()->sekolah_id);
+                $query->whereHas('rombongan_belajar', function($query){
+                    $query->whereIn('tingkat', [12, 13]);
+                    $query->where('semester_id', request()->semester_id);
+                });
+                $query->has('kurikulum');
+            })->orderBy('nama_jurusan_sp')->get();
+        }
+        if(request()->data == 'kurikulum'){
+            $data = Kurikulum::where('jurusan_id', request()->jurusan_id)->get();
         }
         return response()->json($data);
     }
@@ -758,6 +773,24 @@ class ReferensiController extends Controller
                     'text' => 'Data Tujuan Pembelajaran gagal di perbaharui. Silahkan coba beberapa saat lagi!',
                 ];
             }
+        }
+        return response()->json($data);
+    }
+    public function bobot_penilaian(){
+        if(request()->isMethod('POST')){
+            foreach(request()->all() as $pembelajaran){
+                Pembelajaran::where('pembelajaran_id', $pembelajaran['pembelajaran_id'])->update([
+                    'bobot_sumatif_materi' => $pembelajaran['bobot_sumatif_materi'],
+                    'bobot_sumatif_akhir' => $pembelajaran['bobot_sumatif_akhir'],
+                ]);
+            }
+            $data = [
+                'color' => 'success',
+                'title' => 'Berhasil!',
+                'text' => 'Bobot Penilaian berhasil disimpan',
+            ];
+        } else {
+            $data = Pembelajaran::with('rombongan_belajar')->where($this->kondisiPembelajaran())->orderBy('mata_pelajaran_id', 'asc')->get();
         }
         return response()->json($data);
     }

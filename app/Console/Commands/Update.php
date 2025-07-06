@@ -33,16 +33,6 @@ class Update extends Command
      */
     public function handle()
     {
-        $win = Str::contains(php_uname('s'), 'Windows');
-        $mac = Str::contains(php_uname('s'), 'Darwin');
-        $linux = Str::contains(php_uname('s'), 'Linux');
-        $this->call('storage:unlink');
-        if($win){
-            exec('rmdir /s /q '.public_path('storage'));
-        } elseif($mac || $linux){
-            exec('rm -rf '.public_path('storage'));
-        }
-        $this->call('storage:link');
         $ajaran = [
             [
                 'tahun_ajaran_id' => 2025,
@@ -138,6 +128,18 @@ class Update extends Command
                 'value' => trim($db_version),
             ]
         );
+        $win = Str::contains(php_uname('s'), 'Windows');
+        $mac = Str::contains(php_uname('s'), 'Darwin');
+        $linux = Str::contains(php_uname('s'), 'Linux');
+        $this->call('storage:unlink');
+        if(is_dir(public_path('storage'))){
+            if($win){
+                exec('rmdir /s /q '.public_path('storage'));
+            } elseif($mac || $linux){
+                exec('rm -rf '.public_path('storage'));
+            }
+        }
+        $this->call('storage:link');
         $this->info('Berhasil memperbaharui aplikasi e-Rapor SMK ke versi '.$version);
     }
 }
