@@ -9,10 +9,5 @@ definePage({
 })
 </script>
 <template>
-  <div>
-    <VCard title="Data Instruktur">
-      <VDivider />
-      <Ptk :data="'instruktur'"></Ptk>
-    </VCard>
-  </div>
+  <Ptk :data="'instruktur'" :titleCard="'Data Instruktur'"></Ptk>
 </template>

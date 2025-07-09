@@ -3,6 +3,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use App\Models\Semester;
 use App\Models\Setting;
+use App\Models\Pembelajaran;
+use App\Models\Agama;
 use Carbon\Carbon;
 
 function get_setting($key, $sekolah_id = NULL, $semester_id = NULL){
@@ -254,4 +256,24 @@ function clean($string){
     $string = str_replace(' ', '-', $string); // Replaces all spaces with hyphens.
     $string = preg_replace('/[^A-Za-z0-9\-]/', '', $string); // Removes special chars.
     return preg_replace('/-+/', '-', $string); // Replaces multiple hyphens with single one.
+}
+function filter_agama_siswa($pembelajaran_id, $rombongan_belajar_id){
+    $ref_agama = Agama::all();
+	$agama_id = [];
+	foreach ($ref_agama as $agama) {
+        $nama_agama = str_replace('Budha', 'Buddha', $agama->nama);
+        $agama_id[$agama->agama_id] = $nama_agama;
+    }
+    $get_mapel = Pembelajaran::with('mata_pelajaran')->find($pembelajaran_id);
+    if($get_mapel){
+        $nama_mapel = str_replace('Pendidikan Agama', '', $get_mapel->mata_pelajaran->nama);
+        $nama_mapel = str_replace('KongHuChu', 'Konghuchu', $nama_mapel);
+        $nama_mapel = str_replace('Kong Hu Chu', 'Konghuchu', $nama_mapel);
+        $nama_mapel = str_replace('dan Budi Pekerti', '', $nama_mapel);
+        $nama_mapel = str_replace('Pendidikan Kepercayaan terhadap', '', $nama_mapel);
+        $nama_mapel = str_replace('Tuhan YME', 'Kepercayaan kpd Tuhan YME', $nama_mapel);
+        $nama_mapel = trim($nama_mapel);
+        $agama_id = array_search($nama_mapel, $agama_id);
+    }
+    return $agama_id;
 }

@@ -12,7 +12,7 @@ definePage({
 
 <template>
   <div>
-    <template v-if="$can('read', 'Administrator')">
+    <template v-if="$can('read', 'Administrator') || $can('read', 'TataUsaha')">
       <Administrator />
     </template>
     <template v-if="$can('read', 'Guru')">

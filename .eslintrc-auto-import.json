@@ -368,6 +368,8 @@
     "$user": true,
     "tingkatKelas": true,
     "data_kompetensi": true,
-    "dataKompetensi": true
+    "dataKompetensi": true,
+    "bentukPenilaian": true,
+    "dataCapaian": true
   }
 }

@@ -40,3 +40,23 @@ export const dataKompetensi = [
         title: 'Pusat Keunggulan',
     },
 ]
+export const dataCapaian = [
+    {
+        value: '0',
+        title: 'Tidak tercapai',
+    },
+    {
+        value: '1',
+        title: 'Tercapai',
+    }
+]
+export const bentukPenilaian = [
+    {
+        value: 'asesmen',
+        title: 'Nilai Asesmen',
+    },
+    {
+        value: 'akhir',
+        title: 'Nilai Akhir',
+    }
+]

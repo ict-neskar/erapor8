@@ -10,6 +10,7 @@ use App\Http\Controllers\PtkController;
 use App\Http\Controllers\RombelController;
 use App\Http\Controllers\PdController;
 use App\Http\Controllers\ReferensiController;
+use App\Http\Controllers\PenilaianController;
 
 Route::group(['prefix' => 'auth'], function () {
     Route::get('semester', [AuthController::class, 'semester']);
@@ -113,5 +114,10 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
             Route::post('/update', [ReferensiController::class, 'update_ukk']);
             Route::post('/save', [ReferensiController::class, 'save_ukk']);
         });
+    });
+    Route::group(['prefix' => 'penilaian'], function () {
+        Route::post('/get-cp', [PenilaianController::class, 'get_cp']);
+        Route::post('/get-nilai-akhir', [PenilaianController::class, 'get_nilai_akhir']);
+        Route::post('/simpan', [PenilaianController::class, 'simpan']);
     });
 });

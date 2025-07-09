@@ -19,6 +19,7 @@ use App\Models\JurusanSp;
 use App\Models\Kurikulum;
 use App\Models\PaketUkk;
 use App\Models\UnitUkk;
+use App\Models\TeknikPenilaian;
 use App\Imports\TemplateTp;
 use Storage;
 
@@ -295,7 +296,7 @@ class ReferensiController extends Controller
                 } else {
                     $query->whereIn('jenis_rombel', [1, 16]);   
                 }
-                if(request()->add_kd || request()->add_cp || request()->mapping){
+                if(request()->add_kd || request()->add_cp || request()->mapping || request()->nilai){
                     $query->whereHas('pembelajaran', $this->kondisiPembelajaran($mata_pelajaran_id));
                 } else {
                     $query->whereHas('pembelajaran', $this->cariPembelajaran());
@@ -365,6 +366,9 @@ class ReferensiController extends Controller
         }
         if(request()->data == 'kurikulum'){
             $data = Kurikulum::where('jurusan_id', request()->jurusan_id)->get();
+        }
+        if(request()->data == 'teknik'){
+            $data = TeknikPenilaian::where('kompetensi_id', 4)->get();
         }
         return response()->json($data);
     }

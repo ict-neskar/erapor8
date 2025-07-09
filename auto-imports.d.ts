@@ -20,6 +20,7 @@ declare global {
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
   const avatarText: typeof import('./resources/js/@core/utils/formatters.js')['avatarText']
+  const bentukPenilaian: typeof import('./resources/js/utils/mixins.js')['bentukPenilaian']
   const betweenValidator: typeof import('./resources/js/@core/utils/validators.js')['betweenValidator']
   const computed: typeof import('vue')['computed']
   const computedAsync: typeof import('@vueuse/core')['computedAsync']
@@ -43,6 +44,7 @@ declare global {
   const createUnrefFn: typeof import('@vueuse/core')['createUnrefFn']
   const createUrl: typeof import('./resources/js/@core/composable/createUrl.js')['createUrl']
   const customRef: typeof import('vue')['customRef']
+  const dataCapaian: typeof import('./resources/js/utils/mixins.js')['dataCapaian']
   const dataKompetensi: typeof import('./resources/js/utils/mixins.js')['dataKompetensi']
   const data_kompetensi: typeof import('./resources/js/utils/mixins.js')['data_kompetensi']
   const debouncedRef: typeof import('@vueuse/core')['debouncedRef']
@@ -388,6 +390,7 @@ declare module 'vue' {
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly avatarText: UnwrapRef<typeof import('./resources/js/@core/utils/formatters.js')['avatarText']>
+    readonly bentukPenilaian: UnwrapRef<typeof import('./resources/js/utils/mixins.js')['bentukPenilaian']>
     readonly betweenValidator: UnwrapRef<typeof import('./resources/js/@core/utils/validators.js')['betweenValidator']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('@vueuse/core')['computedAsync']>
@@ -411,6 +414,7 @@ declare module 'vue' {
     readonly createUnrefFn: UnwrapRef<typeof import('@vueuse/core')['createUnrefFn']>
     readonly createUrl: UnwrapRef<typeof import('./resources/js/@core/composable/createUrl.js')['createUrl']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
+    readonly dataCapaian: UnwrapRef<typeof import('./resources/js/utils/mixins.js')['dataCapaian']>
     readonly dataKompetensi: UnwrapRef<typeof import('./resources/js/utils/mixins.js')['dataKompetensi']>
     readonly debouncedRef: UnwrapRef<typeof import('@vueuse/core')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('@vueuse/core')['debouncedWatch']>

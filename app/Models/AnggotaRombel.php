@@ -24,4 +24,34 @@ class AnggotaRombel extends Model
 	public function nilai_akhir(){
 		return $this->hasMany(NilaiAkhir::class, 'anggota_rombel_id', 'anggota_rombel_id');
 	}
+	public function nilai_sumatif()
+	{
+		return $this->hasMany(NilaiSumatif::class, 'anggota_rombel_id', 'anggota_rombel_id');
+	}
+	public function nilai_tp()
+	{
+		return $this->hasMany(NilaiTp::class, 'anggota_rombel_id', 'anggota_rombel_id');
+	}
+	public function capaian_kompeten(){
+		return $this->hasMany(TpNilai::class, 'anggota_rombel_id', 'anggota_rombel_id');
+	}
+	public function tp_kompeten(){
+		return $this->hasMany(TpNilai::class, 'anggota_rombel_id', 'anggota_rombel_id')->where('kompeten', 1);
+	}
+	public function tp_inkompeten(){
+		return $this->hasMany(TpNilai::class, 'anggota_rombel_id', 'anggota_rombel_id')->where('kompeten', 0);
+	}
+	public function nilai_sumatif_semester()
+	{
+		return $this->hasOne(NilaiSumatif::class, 'anggota_rombel_id', 'anggota_rombel_id')->where('jenis', 'na');
+	}
+	public function nilai_akhir_mapel(){
+		return $this->hasOne(NilaiAkhir::class, 'anggota_rombel_id', 'anggota_rombel_id');
+	}
+	public function nilai_akhir_kurmer(){
+		return $this->hasOne(NilaiAkhir::class, 'anggota_rombel_id', 'anggota_rombel_id')->where('kompetensi_id', 4);
+	}
+	public function nilai_akhir_induk(){
+		return $this->hasOne(NilaiAkhir::class, 'anggota_rombel_id', 'anggota_rombel_id')->where('kompetensi_id', 99);
+	}
 }

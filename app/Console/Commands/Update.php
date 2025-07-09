@@ -10,6 +10,7 @@ use App\Models\Semester;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Team;
+use App\Models\Permission;
 use File;
 
 class Update extends Command
@@ -107,7 +108,28 @@ class Update extends Command
         Semester::where('semester_id', '20242')->update(['periode_aktif' => 1]);
         $version = File::get(base_path().'/app_version.txt');
         $db_version = File::get(base_path().'/db_version.txt');
-        //$this->call('generate:akses');
+        Role::updateOrCreate(
+            [
+                'name' => 'tu',
+            ],
+            [
+                'display_name' => 'Tata Usaha',
+				'description' => 'Tata Usaha',
+				'created_at' => now(),
+				'updated_at' => now(),
+            ]
+        );
+        $roles = Role::get();
+        foreach($roles as $role){
+            $permissions = Permission::updateOrCreate(
+                [ 'name' => $role->name ],
+                [
+                    'display_name' => $role->display_name,
+                    'description' => $role->description,
+                ]
+            )->id;
+            $role->permissions()->sync($permissions);
+        }
         $this->call('migrate');
         $this->call('cache:clear');
         $this->call('view:clear');
@@ -139,7 +161,11 @@ class Update extends Command
                 exec('rm -rf '.public_path('storage'));
             }
         }
-        $this->call('storage:link');
+        try {
+            linkinfo(public_path('storage'));
+        } catch (\Throwable $th) {
+            $this->call('storage:link');
+        }
         $this->info('Berhasil memperbaharui aplikasi e-Rapor SMK ke versi '.$version);
     }
 }

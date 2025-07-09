@@ -164,6 +164,14 @@ class AuthController extends Controller
                 ],
             ];
         }
+        if($user->hasRole('tu', $semester->nama)){
+            $pilihan = [
+                [
+                    'action' => 'read',
+                    'subject' => 'TataUsaha'
+                ],
+            ];
+        }
         if($user->hasRole('wali', $semester->nama)){
             if($semester->semester == 1){
                 $wali = [

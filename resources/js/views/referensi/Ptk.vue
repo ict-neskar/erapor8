@@ -1,5 +1,9 @@
 <script setup>
 const props = defineProps({
+    titleCard: {
+        type: String,
+        required: true,
+    },
     data: {
         type: String,
         required: true,
@@ -136,7 +140,11 @@ const confirmDialog = async () => {
 }
 </script>
 <template>
-    <VCard>
+    <VCard class="mb-6">
+        <VCardItem class="pb-4">
+            <VCardTitle>{{ titleCard }}</VCardTitle>
+        </VCardItem>
+        <VDivider />
         <VCardText class="d-flex flex-wrap gap-4">
             <div class="d-flex gap-2 align-center">
                 <AppSelect v-model="options.itemsPerPage" :items="[
