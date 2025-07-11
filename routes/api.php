@@ -11,6 +11,7 @@ use App\Http\Controllers\RombelController;
 use App\Http\Controllers\PdController;
 use App\Http\Controllers\ReferensiController;
 use App\Http\Controllers\PenilaianController;
+use App\Http\Controllers\UkkController;
 
 Route::group(['prefix' => 'auth'], function () {
     Route::get('semester', [AuthController::class, 'semester']);
@@ -127,5 +128,11 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('/destroy', [PenilaianController::class, 'destroy']);
         Route::get('/nilai-sikap/{id?}', [PenilaianController::class, 'nilai_sikap']);
         Route::post('/upload-nilai', [PenilaianController::class, 'upload_nilai']);
+    });
+    Route::group(['prefix' => 'ukk'], function () {
+        Route::get('/', [UkkController::class, 'index']);
+        Route::post('/save', [UkkController::class, 'save']);
+        Route::post('/hapus', [UkkController::class, 'hapus']);
+        Route::post('/show', [UkkController::class, 'show']);
     });
 });

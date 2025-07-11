@@ -72,4 +72,7 @@ class Ptk extends Model
             'dudi_id'
         );
 	}
+    public function pengguna(){
+		return $this->hasOne(User::class, 'guru_id', 'guru_id');
+	}
 }

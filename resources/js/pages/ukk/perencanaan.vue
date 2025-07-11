@@ -1,4 +1,10 @@
 <script setup>
+import { Indonesian } from "flatpickr/dist/l10n/id.js";
+const dateConfig = ref({
+  locale: Indonesian,
+  altFormat: "j F Y",
+  altInput: true,
+});
 definePage({
   meta: {
     action: 'read',
@@ -6,14 +12,7 @@ definePage({
     title: 'Rencana Penilaian UKK',
   },
 })
-const linkTemplateTp = ref()
-const showUpload = ref(false)
-const showCp = ref(false)
-const showKd = ref(false)
 const options = ref({
-  tingkat: null,
-  rombongan_belajar_id: null,
-  pembelajaran_id: null,
   page: 1,
   itemsPerPage: 10,
   searchQuery: '',
@@ -23,29 +22,25 @@ const options = ref({
 // Headers
 const headers = [
   {
-    key: 'mata_pelajaran_id',
-    title: 'Mata Pelajaran',
+    key: 'paket_ukk',
+    title: 'Paket Kompetensi',
+    sortable: false,
   },
   {
-    key: 'rombel',
-    title: 'rombel',
+    key: 'guru_internal',
+    title: 'Penguji Internal',
+    sortable: false,
+  },
+  {
+    key: 'guru_eksternal',
+    title: 'Penguji Eksternal',
+    sortable: false,
+  },
+  {
+    key: 'pd_count',
+    title: 'Jml PD',
+    sortable: false,
     align: 'center',
-    sortable: false,
-  },
-  {
-    key: 'kd_cp',
-    title: 'CP/KD',
-    sortable: false,
-  },
-  {
-    key: 'kelas',
-    title: 'Fase/Tingkat',
-    sortable: false,
-    align: 'center',
-  },
-  {
-    key: 'deskripsi',
-    title: 'Deskripsi',
   },
   {
     key: 'actions',
@@ -57,8 +52,6 @@ const headers = [
 ]
 const items = ref([])
 const total = ref(0)
-const data_rombel = ref([])
-const data_mapel = ref([])
 const loadingTable = ref(false)
 onMounted(async () => {
   await fetchData();
@@ -79,15 +72,13 @@ const updateSortBy = (val) => {
 const fetchData = async () => {
   loadingTable.value = true;
   try {
-    const response = await useApi(createUrl('/referensi/tujuan-pembelajaran', {
+    const response = await useApi(createUrl('/ukk', {
       query: {
         user_id: $user.user_id,
         guru_id: $user.guru_id,
         sekolah_id: $user.sekolah_id,
         semester_id: $semester.semester_id,
         periode_aktif: $semester.nama,
-        tingkat: options.value.tingkat,
-        rombongan_belajar_id: options.value.rombongan_belajar_id,
         q: options.value.searchQuery,
         page: options.value.page,
         per_page: options.value.itemsPerPage,
@@ -117,130 +108,103 @@ const filter = ref({
 })
 const isNotifVisible = ref(false)
 const loadingRombel = ref(false)
-const loadingMapel = ref(false)
-const loadingCp = ref(false)
-const loadingKd = ref(false)
-const changeTingkat = async (val) => {
-  loadingRombel.value = true
-  data_rombel.value = []
-  data_mapel.value = []
-  filter.value.rombongan_belajar_id = null
-  filter.value.pembelajaran_id = null
-  options.value.tingkat = val
-  if (val) {
-    await $api('/referensi/get-data', {
-      method: 'POST',
-      body: {
-        data: 'rombel',
-        tingkat: val,
-        user_id: $user.user_id,
-        guru_id: $user.guru_id,
-        sekolah_id: $user.sekolah_id,
-        semester_id: $semester.semester_id,
-        periode_aktif: $semester.nama,
-      },
-      onResponse({ response }) {
-        let getData = response._data
-        loadingRombel.value = false
-        data_rombel.value = getData
-      }
-    })
-  } else {
-    loadingRombel.value = false
-  }
-}
-const changeRombel = async (val) => {
-  data_mapel.value = []
-  loadingMapel.value = true
-  filter.value.pembelajaran_id = null
-  options.value.rombongan_belajar_id = val
-  if (val) {
-    await $api('/referensi/get-data', {
-      method: 'POST',
-      body: {
-        data: 'mapel',
-        rombongan_belajar_id: val,
-        user_id: $user.user_id,
-        guru_id: $user.guru_id,
-        sekolah_id: $user.sekolah_id,
-        semester_id: $semester.semester_id,
-        periode_aktif: $semester.nama,
-      },
-      onResponse({ response }) {
-        let getData = response._data
-        loadingMapel.value = false
-        data_mapel.value = getData.mapel
-      }
-    })
-  } else {
-    loadingMapel.value = false
-  }
-}
-const changeMapel = async (val) => {
-  options.value.pembelajaran_id = val
-}
+const loadingInternal = ref(false)
+const loadingPaket = ref(false)
+const loadingBody = ref(false)
 const isDialogVisible = ref(false)
 const dialogTitle = ref('')
 const defaultForm = {
   semester_id: $semester.semester_id,
   user_id: $user.user_id,
   guru_id: $user.guru_id,
-  sekolah_id: $user.sekolah_id
+  sekolah_id: $user.sekolah_id,
+  periode_aktif: $semester.nama,
 }
 const form = ref({
-  tp_id: null,
   tingkat: null,
   rombongan_belajar_id: null,
-  mata_pelajaran_id: null,
-  cp_id: null,
-  kd_id: null,
-  template_excel: null,
-  deskripsi: null,
-  merdeka: false,
+  jurusan_id: null,
+  penguji_internal: null,
+  penguji_eksternal: null,
+  paket_ukk_id: null,
+  tanggal: null,
+  selected: [],
 })
 const errors = ref({
   tingkat: null,
   rombongan_belajar_id: null,
-  mata_pelajaran_id: null,
-  cp_id: null,
-  kd_id: null,
-  template_excel: null,
-  deskripsi: null,
+  penguji_internal: null,
+  penguji_eksternal: null,
+  paket_ukk_id: null,
+  tanggal: null,
 })
 const getAksi = ref()
 const confirmationText = ref()
+const rencanaUkkId = ref()
+const detilRencana = ref()
 const aksi = async (aksi, item) => {
-  form.value.tp_id = item.tp_id
+  rencanaUkkId.value = item.rencana_ukk_id
   getAksi.value = aksi
-  if (aksi == 'mapping') {
-    isDialogVisible.value = true
-    dialogTitle.value = 'Petakan TP ke Rombongan Belajar'
-  } else if (aksi == 'edit') {
-    isDialogVisible.value = true
-    form.value.deskripsi = item.deskripsi
-    dialogTitle.value = 'Ubah Deskripsi Kompetensi Dasar'
+  if (aksi == 'detil') {
+    dialogTitle.value = 'Detil Perencanaan Penilaian UKK'
+    await $api('/ukk/show', {
+      method: 'POST',
+      body: {
+        rencana_ukk_id: rencanaUkkId.value,
+      },
+      onResponse({ response }) {
+        let getData = response._data
+        isDialogVisible.value = true
+        detilRencana.value = getData.rencana
+        dataSiswa.value = getData.data_siswa
+      },
+    })
   } else {
     isConfirmDialogVisible.value = true
     confirmationText.value = 'Tindakan ini tidak dapat dikembalikan!'
   }
 }
 const dataRombel = ref([])
-const dataMapel = ref([])
-const dataCp = ref([])
-const dataKd = ref([])
+const dataInternal = ref([])
+const dataEksternal = ref([])
+const paketUkk = ref([])
+const dataSiswa = ref([])
+const selectAll = ref(false)
+const selectAllItems = () => {
+  if (selectAll.value) {
+    form.value.selected = dataSiswa.value.map(siswa => `${siswa.peserta_didik_id}#${siswa.anggota_rombel.anggota_rombel_id}`)
+  } else {
+    form.value.selected = []
+  }
+}
+const toggleIndeterminateCheckbox = ref(false)
+watch(
+  () => form.value.selected,
+  (newValue) => {
+    if (newValue.length === dataSiswa.value.length) {
+      selectAll.value = true
+    } else {
+      toggleIndeterminateCheckbox.value = true
+      selectAll.value = false
+    }
+  }
+)
+const rencanaUkk = ref()
 const addNewData = () => {
   getAksi.value = 'add'
   isDialogVisible.value = true
-  dialogTitle.value = 'Tambah Data Tujuan Pembelajaran'
+  dialogTitle.value = 'Tambah Perencanaan Penilaian UKK'
 }
 const confirmDelete = async (val) => {
   if (val) {
-    await $api('/referensi/tujuan-pembelajaran/delete', {
+    await $api('/ukk/hapus', {
       method: 'POST',
-      body: form.value,
+      body: {
+        data: 'rencana',
+        rencana_ukk_id: rencanaUkkId.value,
+      },
       onResponse({ response }) {
         let getData = response._data
-        getItem.value = null
         isDialogVisible.value = false
         isNotifVisible.value = true
         notif.value = getData
@@ -251,86 +215,51 @@ const confirmDelete = async (val) => {
 const confirmClose = async () => {
   await fetchData();
 }
-const pembelajaranId = ref()
-const postData = async () => {
-  const aksiForm = { aksi: getAksi.value }
-  const mergedForm = { ...aksiForm, ...defaultForm, ...form.value };
-  const dataForm = new FormData();
-  dataForm.append('aksi', mergedForm.aksi);
-  dataForm.append('guru_id', mergedForm.guru_id);
-  dataForm.append('sekolah_id', mergedForm.sekolah_id);
-  dataForm.append('semester_id', mergedForm.semester_id);
-  dataForm.append('user_id', mergedForm.user_id);
-  dataForm.append('cp_id', (mergedForm.cp_id) ? mergedForm.cp_id : '');
-  dataForm.append('kd_id', (mergedForm.kd_id) ? mergedForm.kd_id : '');
-  dataForm.append('deskripsi', (mergedForm.deskripsi) ? mergedForm.deskripsi : '');
-  dataForm.append('mata_pelajaran_id', (mergedForm.mata_pelajaran_id) ? mergedForm.mata_pelajaran_id : '');
-  dataForm.append('pembelajaran_id', pembelajaranId.value);
-  dataForm.append('rombongan_belajar_id', (mergedForm.rombongan_belajar_id) ? mergedForm.rombongan_belajar_id : '');
-  dataForm.append('template_excel', (mergedForm.template_excel) ? mergedForm.template_excel : '');
-  dataForm.append('tingkat', (mergedForm.tingkat) ? mergedForm.tingkat : '');
-  dataForm.append('tp_id', (mergedForm.tp_id) ? mergedForm.tp_id : '');
-  await $api('/referensi/tujuan-pembelajaran/save', {
-    method: 'POST',
-    body: dataForm,
-    onResponse({ response }) {
-      let getData = response._data
-      if (getData.errors) {
-        errors.value = getData.errors
-      } else {
-        pembelajaranId.value = null
-        showUpload.value = false
-        isDialogVisible.value = false
-        isNotifVisible.value = true
-        notif.value = getData
-        form.value = {
-          tp_id: null,
-          tingkat: null,
-          rombongan_belajar_id: null,
-          mata_pelajaran_id: null,
-          cp_id: null,
-          kd_id: null,
-          template_excel: null,
-          deskripsi: null,
-          merdeka: false,
-        }
-        errors.value = {
-          tingkat: null,
-          rombongan_belajar_id: null,
-          mata_pelajaran_id: null,
-          cp_id: null,
-          kd_id: null,
-          template_excel: null,
-          deskripsi: null,
-        }
-      }
-    },
-  })
+const formReset = () => {
+  form.value = {
+    tingkat: null,
+    rombongan_belajar_id: null,
+    jurusan_id: null,
+    penguji_internal: null,
+    penguji_eksternal: null,
+    paket_ukk_id: null,
+    tanggal: null,
+    selected: [],
+  }
+  errors.value = {
+    tingkat: null,
+    rombongan_belajar_id: null,
+    penguji_internal: null,
+    penguji_eksternal: null,
+    paket_ukk_id: null,
+    tanggal: null,
+  }
+  dataRombel.value = []
+  dataInternal.value = []
+  dataEksternal.value = []
+  paketUkk.value = []
+  dataSiswa.value = []
+  selectAll.value = false
 }
 const saveData = async (val) => {
   if (val) {
-    await postData()
-  } else {
-    form.value = {
-      tp_id: null,
-      tingkat: null,
-      rombongan_belajar_id: null,
-      mata_pelajaran_id: null,
-      cp_id: null,
-      kd_id: null,
-      template_excel: null,
-      deskripsi: null,
-      merdeka: false,
-    }
-    errors.value = {
-      tingkat: null,
-      rombongan_belajar_id: null,
-      mata_pelajaran_id: null,
-      cp_id: null,
-      kd_id: null,
-      template_excel: null,
-      deskripsi: null,
-    }
+    const aksiForm = { data: 'rencana' }
+    const mergedForm = { ...aksiForm, ...defaultForm, ...form.value };
+    await $api('/ukk/save', {
+      method: 'POST',
+      body: mergedForm,
+      onResponse({ response }) {
+        let getData = response._data
+        if (getData.errors) {
+          errors.value = getData.errors
+        } else {
+          formReset()
+          isDialogVisible.value = false
+          isNotifVisible.value = true
+          notif.value = getData
+        }
+      },
+    })
   }
 }
 const changeFormTingkat = async (val) => {
@@ -351,61 +280,82 @@ const changeFormTingkat = async (val) => {
 }
 const changeFormRombel = async (val) => {
   if (val) {
-    loadingMapel.value = true
-    const newForm = { data: 'mapel' };
+    loadingInternal.value = true
+    const newForm = { data: 'penguji-ukk' };
     const mergedForm = { ...newForm, ...defaultForm, ...form.value };
     await $api('/referensi/get-data', {
       method: 'POST',
       body: mergedForm,
       onResponse({ response }) {
         let getData = response._data
-        dataMapel.value = getData.mapel
-        form.value.merdeka = getData.merdeka
-        loadingMapel.value = false
+        form.value.jurusan_id = getData.rombel.jurusan_sp.jurusan_id
+        dataInternal.value = getData.internal
+        dataEksternal.value = getData.eksternal
+        loadingInternal.value = false
       }
     })
   }
 }
-const changeFormMapel = async (val) => {
-  showCp.value = false
-  showKd.value = false
+const changeTanggal = async (val) => {
   if (val) {
-    loadingCp.value = true
-    loadingKd.value = true
-    const newForm = { data: 'cp_kd' };
+    loadingPaket.value = true
+    const newForm = { data: 'paket-ukk' };
     const mergedForm = { ...newForm, ...defaultForm, ...form.value };
     await $api('/referensi/get-data', {
       method: 'POST',
       body: mergedForm,
       onResponse({ response }) {
         let getData = response._data
-        dataCp.value = getData.cp
-        dataKd.value = getData.kd
-        pembelajaranId.value = getData.pembelajaran_id
-        if (getData.cp.length) {
-          showCp.value = true
-        }
-        if (getData.kd.length) {
-          showKd.value = true
-        }
-        loadingKd.value = false
-        loadingCp.value = false
+        paketUkk.value = getData
+        loadingPaket.value = false
       }
     })
   }
 }
-const changeCp = () => {
-  showUpload.value = true
-  linkTemplateTp.value = '/downloads/template-tp/' + form.value.cp_id + '/' + form.value.rombongan_belajar_id + '/' + pembelajaranId.value
+const changePaket = async (val) => {
+  if (val) {
+    loadingBody.value = true
+    const newForm = { data: 'siswa-ukk' };
+    const mergedForm = { ...newForm, ...defaultForm, ...form.value };
+    await $api('/referensi/get-data', {
+      method: 'POST',
+      body: mergedForm,
+      onResponse({ response }) {
+        let getData = response._data
+        rencanaUkk.value = getData.rencana_ukk
+        dataSiswa.value = getData.data_siswa
+        loadingBody.value = false
+      }
+    })
+  }
 }
-const changeKd = () => {
-  showUpload.value = true
-  linkTemplateTp.value = '/downloads/template-tp/' + form.value.kd_id + '/' + form.value.rombongan_belajar_id + '/' + pembelajaranId.value
+const kesimpulanUkk = (item) => {
+  var predikat = ''
+  if (item.nilai_ukk && item.nilai_ukk.nilai) {
+    var nilai = item.nilai_ukk.nilai
+    /*if (nilai >= 90) {
+        predikat = 'Sangat Kompeten';
+    } else if (nilai >= 75 && nilai <= 89) {
+        predikat = 'Kompeten';
+    } else if (nilai >= 70 && nilai <= 74) {
+        predikat = 'Cukup Kompeten';
+    } else if (nilai < 70) {
+        predikat = 'Belum Kompeten';
+    }*/
+    if (nilai >= 70) {
+      predikat = 'Kompeten';
+    } else {
+      predikat = 'Belum Kompeten';
+    }
+  }
+  return predikat;
 }
-const getRombel = (tp_mapel) => {
-  let rombel = tp_mapel.map(x => x.rombongan_belajar.nama);//.join(", ");
-  let uniqueChars = [...new Set(rombel)];
-  return uniqueChars.join(", ");
+const generateLink = (item) => {
+  var link_cetak = null
+  if (item.nilai_ukk.nilai) {
+    link_cetak = `/cetak/sertifikat/${item.nilai_ukk.anggota_rombel_id}/${item.nilai_ukk.rencana_ukk_id}`
+  }
+  return link_cetak
 }
 </script>
 
@@ -445,70 +395,28 @@ const getRombel = (tp_mapel) => {
       <!-- SECTION datatable -->
       <VDataTableServer :items="items" :server-items-length="total" :headers="headers" :options="options"
         :loading="loadingTable" loading-text="Loading..." @update:sortBy="updateSortBy">
-        <template #item.mata_pelajaran_id="{ item }">
-          <template v-if="item.cp">
-            {{ item.cp.mata_pelajaran.nama }}
-          </template>
-          <template v-else>
-            {{ item.kd.mata_pelajaran.nama }}
-          </template>
+        <template #item.paket_ukk="{ item }">
+          {{ item.paket_ukk.nama_paket_id }}
         </template>
-        <template #item.rombel="{ item }">
-          {{ getRombel(item.tp_mapel) }}
+        <template #item.guru_internal="{ item }">
+          <ProfilePtk :item="item.guru_internal" />
         </template>
-        <template #item.kd_cp="{ item }">
-          <template v-if="item.cp">
-            {{ item.cp.elemen }}
-          </template>
-          <template v-else>
-            {{ item.kd.kompetensi_dasar }}
-          </template>
-        </template>
-        <template #item.kelas="{ item }">
-          <template v-if="item.cp">
-            {{ item.cp.fase }}
-          </template>
-          <template v-else>
-            <span v-if="item.kelas_10">10</span>
-            <span v-if="item.kelas_11">&nbsp;11</span>
-            <span v-if="item.kelas_12">&nbsp;12</span>
-            <span v-if="item.kelas_13">&nbsp;13</span>
-          </template>
-        </template>
-        <template #item.status="{ item }">
-          <VChip size="x-small" color="success" variant="elevated" v-if="item.aktif">
-            Aktif
-          </VChip>
-          <VChip size="x-small" color="error" variant="elevated" v-else>
-            Non Aktif
-          </VChip>
+        <template #item.guru_eksternal="{ item }">
+          <ProfilePtk :item="item.guru_eksternal" />
         </template>
         <template #item.actions="{ item }">
-          <IconBtn @click="aksi('mapping', item)">
+          <IconBtn @click="aksi('detil', item)">
             <VTooltip activator="parent" location="top">
-              Mapping Rombel
+              Detil Data
             </VTooltip>
-            <VIcon icon="tabler-copy" />
+            <VIcon icon="tabler-file-search" />
           </IconBtn>
-          <VBtn icon variant="text" color="medium-emphasis">
-            <VIcon icon="tabler-dots-vertical" />
-            <VMenu activator="parent">
-              <VList>
-                <VListItem @click="aksi('edit', item)">
-                  <template #prepend>
-                    <VIcon icon="tabler-pencil" />
-                  </template>
-                  <VListItemTitle>Ubah Data</VListItemTitle>
-                </VListItem>
-                <VListItem @click="aksi('hapus', item)">
-                  <template #prepend>
-                    <VIcon icon="tabler-trash" />
-                  </template>
-                  <VListItemTitle>Hapus Data</VListItemTitle>
-                </VListItem>
-              </VList>
-            </VMenu>
-          </VBtn>
+          <IconBtn @click="aksi('hapus', item)">
+            <VTooltip activator="parent" location="top">
+              Hapus Data
+            </VTooltip>
+            <VIcon icon="tabler-trash" color="error" />
+          </IconBtn>
         </template>
         <!-- pagination -->
         <template #bottom>
@@ -518,23 +426,20 @@ const getRombel = (tp_mapel) => {
       <!-- SECTION -->
     </VCard>
     <DefaultDialog v-model:isDialogVisible="isDialogVisible" :dialog-title="dialogTitle" :errors="errors"
-      @confirm="saveData">
+      :isSubmitBtn="getAksi == 'add'" @confirm="saveData">
       <template #content>
-        <VRow>
-          <template v-if="getAksi == 'edit'">
+        <template v-if="getAksi == 'add'">
+          <VRow>
             <VCol cols="12">
               <VRow no-gutters>
                 <VCol cols="12" md="3" class="d-flex align-items-center">
-                  <label class="v-label text-body-2 text-high-emphasis" for="deskripsi">Deskripsi</label>
+                  <label class="v-label text-body-2 text-high-emphasis" for="semester_id">Tahun Pelajaran</label>
                 </VCol>
                 <VCol cols="12" md="9">
-                  <AppTextarea v-model="form.deskripsi" placeholder="Deskripsi Tujuan Pembelajaran" auto-grow
-                    :error-messages="errors.deskripsi" />
+                  <AppTextField id="semester_id" :value="$semester.nama" disabled />
                 </VCol>
               </VRow>
             </VCol>
-          </template>
-          <template v-else>
             <VCol cols="12">
               <VRow no-gutters>
                 <VCol cols="12" md="3" class="d-flex align-items-center">
@@ -547,101 +452,138 @@ const getRombel = (tp_mapel) => {
                 </VCol>
               </VRow>
             </VCol>
-            <template v-if="getAksi == 'add'">
-              <VCol cols="12">
-                <VRow no-gutters>
-                  <VCol cols="12" md="3" class="d-flex align-items-center">
-                    <label class="v-label text-body-2 text-high-emphasis" for="rombongan_belajar_id">Rombongan
-                      Belajar</label>
-                  </VCol>
-                  <VCol cols="12" md="9">
-                    <AppSelect v-model="form.rombongan_belajar_id" placeholder="== Pilih Rombongan Belajar == "
-                      :items="dataRombel" clearable clear-icon="tabler-x" @update:model-value="changeFormRombel"
-                      item-value="rombongan_belajar_id" item-title="nama" :loading="loadingRombel"
-                      :disabled="loadingRombel" :error-messages="errors.rombongan_belajar_id" />
-                  </VCol>
-                </VRow>
-              </VCol>
-              <VCol cols="12">
-                <VRow no-gutters>
-                  <VCol cols="12" md="3" class="d-flex align-items-center">
-                    <label class="v-label text-body-2 text-high-emphasis" for="mata_pelajaran_id">Mata Pelajaran</label>
-                  </VCol>
-                  <VCol cols="12" md="9">
-                    <AppSelect v-model="form.mata_pelajaran_id" placeholder="== Pilih Mata Pelajaran =="
-                      :items="dataMapel" clearable clear-icon="tabler-x" @update:model-value="changeFormMapel"
-                      item-value="mata_pelajaran_id" item-title="nama_mata_pelajaran" :loading="loadingMapel"
-                      :disabled="loadingMapel" :error-messages="errors.mata_pelajaran_id" />
-                  </VCol>
-                </VRow>
-              </VCol>
-              <VCol cols="12" v-if="showCp">
-                <VRow no-gutters>
-                  <VCol cols="12" md="3" class="d-flex align-items-center">
-                    <label class="v-label text-body-2 text-high-emphasis" for="cp_id">Capaian Pembelajaran (CP)</label>
-                  </VCol>
-                  <VCol cols="12" md="9">
-                    <AppSelect v-model="form.cp_id" placeholder="== Pilih Capaian Pembelajaran (CP) ==" :items="dataCp"
-                      clearable clear-icon="tabler-x" @update:model-value="changeCp" item-value="cp_id"
-                      item-title="deskripsi" :loading="loadingCp" :disabled="loadingCp"
-                      :error-messages="errors.cp_id" />
-                  </VCol>
-                </VRow>
-              </VCol>
-              <VCol cols="12" v-if="showKd">
-                <VRow no-gutters>
-                  <VCol cols="12" md="3" class="d-flex align-items-center">
-                    <label class="v-label text-body-2 text-high-emphasis" for="kd_id">Kompetensi Dasar (KD)</label>
-                  </VCol>
-                  <VCol cols="12" md="9">
-                    <AppSelect v-model="form.kd_id" placeholder="== Pilih Capaian Pembelajaran (CP) ==" :items="dataKd"
-                      clearable clear-icon="tabler-x" @update:model-value="changeKd" item-value="kd_id"
-                      item-title="kompetensi_dasar" :loading="loadingKd" :disabled="loadingKd"
-                      :error-messages="errors.kd_id" />
-                  </VCol>
-                </VRow>
-              </VCol>
-              <VCol cols="12" v-if="showUpload">
-                <VRow no-gutters>
-                  <VCol cols="12" md="3" class="d-flex align-items-center">
-                    <label class="v-label text-body-2 text-high-emphasis" for="template_excel">Template Excel</label>
-                  </VCol>
-                  <VCol cols="12" md="9">
-                    <VRow no-gutters>
-                      <VCol cols="6">
-                        <VFileInput id="template_excel" v-model="form.template_excel"
-                          :error-messages="errors.template_excel"
-                          accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-                          label="Unggah Template Excel" />
-                      </VCol>
-                      <VCol cols="6">
-                        <VBtn color="primary" class="ms-3" block :href="linkTemplateTp" target="_blank">
-                          Unduh Template TP
-                        </VBtn>
-                      </VCol>
-                    </VRow>
-                  </VCol>
-                </VRow>
-              </VCol>
-            </template>
-            <template v-else>
-              <VCol cols="12">
-                <VRow no-gutters>
-                  <VCol cols="12" md="3" class="d-flex align-items-center">
-                    <label class="v-label text-body-2 text-high-emphasis" for="rombongan_belajar_id">Rombongan
-                      Belajar</label>
-                  </VCol>
-                  <VCol cols="12" md="9">
-                    <AppSelect v-model="form.rombongan_belajar_id" placeholder="== Pilih Rombongan Belajar == "
-                      :items="dataRombel" chips multiple closable-chips item-value="rombongan_belajar_id"
-                      item-title="nama" :loading="loadingRombel" :disabled="loadingRombel"
-                      :error-messages="errors.rombongan_belajar_id" />
-                  </VCol>
-                </VRow>
-              </VCol>
-            </template>
-          </template>
-        </VRow>
+            <VCol cols="12">
+              <VRow no-gutters>
+                <VCol cols="12" md="3" class="d-flex align-items-center">
+                  <label class="v-label text-body-2 text-high-emphasis" for="rombongan_belajar_id">Rombongan
+                    Belajar</label>
+                </VCol>
+                <VCol cols="12" md="9">
+                  <AppSelect v-model="form.rombongan_belajar_id" placeholder="== Pilih Rombongan Belajar == "
+                    :items="dataRombel" clearable clear-icon="tabler-x" @update:model-value="changeFormRombel"
+                    item-value="rombongan_belajar_id" item-title="nama" :loading="loadingRombel"
+                    :disabled="loadingRombel" :error-messages="errors.rombongan_belajar_id" />
+                </VCol>
+              </VRow>
+            </VCol>
+            <VCol cols="12">
+              <VRow no-gutters>
+                <VCol cols="12" md="3" class="d-flex align-items-center">
+                  <label class="v-label text-body-2 text-high-emphasis" for="penguji_internal">Penguji Internal</label>
+                </VCol>
+                <VCol cols="12" md="9">
+                  <AppSelect v-model="form.penguji_internal" placeholder="== Pilih Penguji Internal =="
+                    :items="dataInternal" clearable clear-icon="tabler-x" item-value="guru_id" item-title="nama_lengkap"
+                    :loading="loadingInternal" :disabled="loadingInternal" :error-messages="errors.penguji_internal" />
+                </VCol>
+              </VRow>
+            </VCol>
+            <VCol cols="12">
+              <VRow no-gutters>
+                <VCol cols="12" md="3" class="d-flex align-items-center">
+                  <label class="v-label text-body-2 text-high-emphasis" for="penguji_eksternal">Penguji
+                    Eksternal</label>
+                </VCol>
+                <VCol cols="12" md="9">
+                  <AppSelect v-model="form.penguji_eksternal" placeholder="== Pilih Penguji Eksternal =="
+                    :items="dataEksternal" clearable clear-icon="tabler-x" item-value="guru_id"
+                    item-title="nama_lengkap" :loading="loadingInternal" :disabled="loadingInternal"
+                    :error-messages="errors.penguji_eksternal" />
+                </VCol>
+              </VRow>
+            </VCol>
+            <VCol cols="12">
+              <VRow no-gutters>
+                <VCol cols="12" md="3" class="d-flex align-items-center">
+                  <label class="v-label text-body-2 text-high-emphasis" for="tanggal">Tanggal Sertifikat</label>
+                </VCol>
+                <VCol cols="12" md="9">
+                  <AppDateTimePicker v-model="form.tanggal" placeholder="== Pilih Tanggal Sertifikat =="
+                    :config="dateConfig" @update:model-value="changeTanggal" />
+                </VCol>
+              </VRow>
+            </VCol>
+            <VCol cols="12">
+              <VRow no-gutters>
+                <VCol cols="12" md="3" class="d-flex align-items-center">
+                  <label class="v-label text-body-2 text-high-emphasis" for="paket_ukk_id">Paket Kompetensi</label>
+                </VCol>
+                <VCol cols="12" md="9">
+                  <AppSelect v-model="form.paket_ukk_id" placeholder="== Pilih Paket Kompetensi ==" :items="paketUkk"
+                    clearable clear-icon="tabler-x" item-value="paket_ukk_id" item-title="nama_paket_id"
+                    :loading="loadingPaket" :disabled="loadingPaket" :error-messages="errors.paket_ukk_id"
+                    @update:model-value="changePaket" />
+                </VCol>
+              </VRow>
+            </VCol>
+            <VCol cols="12" class="text-center" v-if="loadingBody">
+              <VProgressCircular :size="60" indeterminate color="error" class="my-10" />
+            </VCol>
+          </VRow>
+        </template>
+      </template>
+      <template #table>
+        <template v-if="getAksi == 'detil'">
+          <VTable class="text-no-wrap">
+            <tbody>
+              <tr>
+                <td>Paket UKK</td>
+                <td>{{ detilRencana?.paket_ukk?.nama_paket_id }}</td>
+              </tr>
+              <tr>
+                <td>Penguji Internal</td>
+                <td>
+                  <ProfilePtk :item="detilRencana?.guru_internal" />
+                </td>
+              </tr>
+              <tr>
+                <td>Penguji Eksternal</td>
+                <td>
+                  <ProfilePtk :item="detilRencana?.guru_eksternal" />
+                </td>
+              </tr>
+            </tbody>
+          </VTable>
+        </template>
+        <template v-if="dataSiswa.length">
+          <VDivider />
+          <VTable class="text-no-wrap" :fixed-header="true">
+            <thead>
+              <tr>
+                <th class="text-center" v-if="getAksi == 'add'">
+                  <VCheckbox v-model:indeterminate="toggleIndeterminateCheckbox" v-model="selectAll"
+                    @change="selectAllItems" />
+                </th>
+                <th>Nama Peserta Didik</th>
+                <template v-if="getAksi == 'detil'">
+                  <th class="text-center">Nilai</th>
+                  <th class="text-center">Kesimpulan</th>
+                  <th class="text-center">Cetak</th>
+                </template>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="siswa in dataSiswa">
+                <td class="text-center" v-if="getAksi == 'add'">
+                  <VCheckbox v-model="form.selected"
+                    :value="`${siswa.peserta_didik_id}#${siswa.anggota_rombel.anggota_rombel_id}`" />
+                </td>
+                <td>
+                  <ProfileSiswa :item="siswa" />
+                </td>
+                <template v-if="getAksi == 'detil'">
+                  <td class="text-center">{{ siswa.nilai_ukk?.nilai }}</td>
+                  <td>{{ kesimpulanUkk(siswa) }}</td>
+                  <td class="text-center">
+                    <VBtn prepend-icon="tabler-printer" color="success" size="small" :href="generateLink(siswa)"
+                      target="_blank" v-if="generateLink(siswa)">Cetak</VBtn>
+                    <!--<b-button variant="success" size="sm" :href="generate_link(item)" target="_blank" v-if="generate_link(item)">Cetak</b-button>-->
+                  </td>
+                </template>
+              </tr>
+            </tbody>
+          </VTable>
+        </template>
       </template>
     </DefaultDialog>
     <ConfirmDialog v-model:isDialogVisible="isConfirmDialogVisible" v-model:isNotifVisible="isNotifVisible"

@@ -18,7 +18,7 @@ class RencanaUkk extends Model
 		return $this->hasOne(Ptk::class, 'guru_id', 'eksternal')->with('dudi');
 	}
 	public function paket_ukk(){
-		return $this->hasOne(PakeUkk::class, 'paket_ukk_id', 'paket_ukk_id');
+		return $this->hasOne(PaketUkk::class, 'paket_ukk_id', 'paket_ukk_id');
 	}
 	public function nilai_ukk(){
 		return $this->hasOne(NilaiUkk::class, 'rencana_ukk_id', 'rencana_ukk_id');

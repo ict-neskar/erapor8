@@ -73,4 +73,7 @@ class AnggotaRombel extends Model
 	public function tp_nilai(){
 		return $this->hasMany(TpNilai::class, 'anggota_rombel_id', 'anggota_rombel_id');
 	}
+	public function nilai_ukk_satuan(){
+		return $this->hasOne(NilaiUkk::class, 'anggota_rombel_id', 'anggota_rombel_id');
+	}
 }

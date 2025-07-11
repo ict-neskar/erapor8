@@ -141,4 +141,14 @@ class PesertaDidik extends Model
 			$query->where('jenis_rombel', 51);
 		});
 	}
+    public function nilai_ukk(){
+		return $this->hasOneThrough(
+            NilaiUkk::class,
+            AnggotaRombel::class,
+            'peserta_didik_id',
+            'anggota_rombel_id',
+            'peserta_didik_id',
+            'anggota_rombel_id'
+        );
+	}
 }
