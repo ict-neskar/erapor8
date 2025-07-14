@@ -163,4 +163,8 @@ class PesertaDidik extends Model
 			$query->where('jenis_rombel', 16);
 		});
 	}
+    public function pd_pkl()
+	{
+		return $this->hasOne(PdPkl::class, 'peserta_didik_id', 'peserta_didik_id');
+	}
 }
