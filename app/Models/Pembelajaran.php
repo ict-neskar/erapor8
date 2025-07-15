@@ -97,4 +97,17 @@ class Pembelajaran extends Model
 	public function all_nilai_akhir_keterampilan(){
 		return $this->hasMany(NilaiAkhir::class, 'pembelajaran_id', 'pembelajaran_id')->where('kompetensi_id', 2);
 	}
+	public function rencana_projek_count(){
+		return $this->hasManyThrough(
+            RencanaBudayaKerja::class,
+			Pembelajaran::class,
+			'induk_pembelajaran_id',
+			'pembelajaran_id',
+			'pembelajaran_id',
+			'pembelajaran_id'
+        );
+	}
+	public function all_nilai_akhir_pk(){
+		return $this->hasMany(NilaiAkhir::class, 'pembelajaran_id', 'pembelajaran_id')->where('kompetensi_id', 3);
+	}
 }

@@ -15,6 +15,7 @@ use App\Http\Controllers\UkkController;
 use App\Http\Controllers\ProjekController;
 use App\Http\Controllers\WalasController;
 use App\Http\Controllers\PklController;
+use App\Http\Controllers\MonitoringController;
 
 Route::group(['prefix' => 'auth'], function () {
     Route::get('semester', [AuthController::class, 'semester']);
@@ -158,5 +159,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/', [PklController::class, 'index']);
         Route::post('/get-data', [PklController::class, 'get_data']);
         Route::post('/save', [PklController::class, 'save']);
+    });
+    Route::group(['prefix' => 'monitoring'], function () {
+        Route::get('/', [MonitoringController::class, 'index']);
+        Route::post('/get-data', [MonitoringController::class, 'get_data']);
     });
 });

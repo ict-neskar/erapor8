@@ -66,4 +66,11 @@ class RombonganBelajar extends Model
 	{
 		return $this->hasOne(Jurusan::class, 'jurusan_id', 'jurusan_id');
 	}
+	public function projek()
+	{
+		return $this->hasOne(Pembelajaran::class, 'rombongan_belajar_id', 'rombongan_belajar_id')->where(function($query){
+			$query->where('mata_pelajaran_id', '200040000');
+         	$query->has('tema');
+		});
+	}
 }

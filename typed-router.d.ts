@@ -26,7 +26,6 @@ declare module 'vue-router/auto-routes' {
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
     'lupa-password': RouteRecordInfo<'lupa-password', '/lupa-password', Record<never, never>, Record<never, never>>,
     'lupa-password-token': RouteRecordInfo<'lupa-password-token', '/lupa-password/:token', { token: ParamValue<true> }, { token: ParamValue<false> }>,
-    'monitoring-catatan-sikap': RouteRecordInfo<'monitoring-catatan-sikap', '/monitoring/catatan-sikap', Record<never, never>, Record<never, never>>,
     'monitoring-cetak-rapor': RouteRecordInfo<'monitoring-cetak-rapor', '/monitoring/cetak-rapor', Record<never, never>, Record<never, never>>,
     'monitoring-nilai-ekskul': RouteRecordInfo<'monitoring-nilai-ekskul', '/monitoring/nilai-ekskul', Record<never, never>, Record<never, never>>,
     'monitoring-nilai-pkl': RouteRecordInfo<'monitoring-nilai-pkl', '/monitoring/nilai-pkl', Record<never, never>, Record<never, never>>,

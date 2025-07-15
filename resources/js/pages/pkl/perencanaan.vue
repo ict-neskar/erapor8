@@ -27,7 +27,6 @@ const loading = ref({
   dudi: false,
   akt_pd: false,
 })
-const dataRombel = ref([])
 const headers = [
   {
     key: 'rombongan_belajar',
@@ -379,11 +378,7 @@ const confirmClose = async () => {
             { value: 100, title: '100' },
           ]" />
         </VCol>
-        <VCol cols="12" md="4">
-          <AppAutocomplete v-model="options.rombongan_belajar_id" :items="dataRombel" placeholder="== Filter Rombel =="
-            item-value="rombongan_belajar_id" item-title="nama" />
-        </VCol>
-        <VCol cols="12" md="4">
+        <VCol cols="12" md="4" offset-md="4">
           <AppTextField v-model="options.searchQuery" placeholder="Cari Data" />
         </VCol>
       </VRow>

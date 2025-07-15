@@ -114,11 +114,11 @@ const hapus = async (pembelajaran_id) => {
               </td>
               <td>
                 <AppAutocomplete :items="listGuru" placeholder="== Pilih Guru Pengajar ==" item-title="nama_lengkap"
-                  item-value="guru_id" v-model="item.guru_pengajar_id" />
+                  item-value="guru_id" v-model="item.guru_pengajar_id" clearable />
               </td>
               <td>
                 <AppAutocomplete :items="listKelompok" placeholder="== Pilih Kelompok ==" item-title="nama_kelompok"
-                  item-value="kelompok_id" v-model="item.kelompok_id" />
+                  item-value="kelompok_id" v-model="item.kelompok_id" clearable />
               </td>
               <td>
                 <AppTextField v-model="item.no_urut" />

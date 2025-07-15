@@ -112,4 +112,7 @@ class AnggotaRombel extends Model
 	public function prestasi(){
 		return $this->hasMany(Prestasi::class, 'anggota_rombel_id', 'anggota_rombel_id');
 	}
+	public function nilai_ekstrakurikuler(){
+		return $this->hasMany(NilaiEkstrakurikuler::class, 'anggota_rombel_id', 'anggota_rombel_id');
+	}
 }
