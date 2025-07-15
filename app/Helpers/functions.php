@@ -330,7 +330,9 @@ function get_current_git_commit( $branch='main' ) {
 function getLastCommit(){
     $url = 'https://api.github.com/repos/eraporsmk/erapor8';
     try {
-        $response = Http::withToken(config('app.github_token'))->get($url);
+        $response = Http::withOptions([
+            'verify' => false,
+        ])->withToken(config('app.github_token'))->get($url);
         $result = $response->object();
         $pushed_at = Carbon::parse($result->pushed_at)->format('Y-m-d H:i:s');
     } catch (\Throwable $th) {
@@ -341,7 +343,9 @@ function getLastCommit(){
 function getCurrentHead(){
     $url = 'https://api.github.com/repos/eraporsmk/erapor8/commits/'.get_current_git_commit();
     try {
-        $response = Http::withToken(config('app.github_token'))->get($url);
+        $response = Http::withOptions([
+            'verify' => false,
+        ])->withToken(config('app.github_token'))->get($url);
         $result = $response->object();
         $pushed_at = Carbon::parse($result->commit->author->date)->format('Y-m-d H:i:s');
     } catch (\Throwable $th) {

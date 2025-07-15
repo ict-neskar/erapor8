@@ -553,7 +553,9 @@ class SettingController extends Controller
     public function github(){
         try {
             $url = 'https://api.github.com/repos/eraporsmk/erapor8/commits';
-            $response = Http::withToken(config('app.github_token'))->get($url, [
+            $response = Http::withOptions([
+                'verify' => false,
+            ])->withToken(config('app.github_token'))->get($url, [
                 'page' => request()->page,
                 'per_page' => request()->per_page,
             ]);
