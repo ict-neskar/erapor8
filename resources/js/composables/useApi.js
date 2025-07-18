@@ -18,7 +18,7 @@ export const useApi = createFetch({
           Authorization: `Bearer ${accessToken}`,
         }
       }
-      
+
       return { options }
     },
     afterFetch(ctx) {
@@ -32,8 +32,21 @@ export const useApi = createFetch({
       catch (error) {
         console.error(error)
       }
-      
+
       return { data: parsedData, response }
     },
+    onFetchError(ctx) {
+      const { response } = ctx
+      if (response.status === 401) {
+        useCookie('userAbilityRules').value = null
+        useCookie('userData').value = null
+        useCookie('accessToken').value = null
+        useCookie("sekolah").value = null
+        useCookie("semester").value = null
+        useCookie("roles").value = null
+        useCookie("profilePhotoPath").value = null
+        window.location.replace('/login')
+      }
+    }
   },
 })

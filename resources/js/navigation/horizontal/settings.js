@@ -17,6 +17,13 @@ export default [
         action: 'read',
         subject: 'Administrator',
       },
+      {
+        title: 'Backup/Restore Database',
+        to: 'pengaturan-backup-restore',
+        icon: 'database',
+        action: 'read',
+        subject: 'Administrator',
+      },
     ],
   },
 ]

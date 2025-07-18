@@ -21,50 +21,67 @@ use App\Models\PesertaDidik;
 use App\Models\Pembelajaran;
 use App\Models\Ekstrakurikuler;
 use Artisan;
+use Storage;
 use Config;
 use File;
 
 class SettingController extends Controller
 {
     public function index(){
-        $sekolah = Sekolah::with(['kepala_sekolah' => function($query){
-            $query->where('semester_id', request()->semester_id);
-        }])->find(request()->sekolah_id);
-        $get_rombel_4_tahun = RombelEmpatTahun::with(['rombongan_belajar'])->where('sekolah_id', request()->sekolah_id)->where('semester_id', request()->semester_id)->get();
-        $rombel_4_tahun = RombelEmpatTahun::where('sekolah_id', request()->sekolah_id)->where('semester_id', request()->semester_id)->get();
-        $plucked = $rombel_4_tahun->pluck('rombongan_belajar_id');
-        $tendik = jenis_gtk('tendik')->all();
-        $guru = jenis_gtk('guru')->all();
-        $jenis_ptk = array_merge($tendik, $guru);
-        $data = [
-            'semester_id' => semester_id(),
-            'semester' => Semester::whereHas('tahun_ajaran', function($query){
-                $query->where('periode_aktif', 1);
-            })->orderBy('semester_id', 'DESC')->get(),
-            'tanggal_rapor' => get_setting('tanggal_rapor', request()->sekolah_id, request()->semester_id),
-            'tanggal_rapor_kelas_akhir' => get_setting('tanggal_rapor_kelas_akhir', request()->sekolah_id, request()->semester_id),
-            'kepala_sekolah' => ($sekolah->kepala_sekolah) ? $sekolah->kepala_sekolah->guru_id : $sekolah->guru_id,
-            'jabatan' => get_setting('jabatan', request()->sekolah_id, request()->semester_id),
-            'zona' => get_setting('zona', request()->sekolah_id),
-            'data_guru' => Ptk::where(function($query) use ($jenis_ptk){
-                $query->where('sekolah_id', request()->sekolah_id);
-                $query->whereIn('jenis_ptk_id', $jenis_ptk);
-            })->select('guru_id', 'nama', 'gelar_depan', 'gelar_belakang')->orderBy('nama')->get(),
-            'data_rombel' => RombonganBelajar::where(function($query){
-                $query->where('jenis_rombel', 1);
-                $query->where('sekolah_id', request()->sekolah_id);
+        if(request()->data == 'backup'){
+            //$files = Storage::disk('local')->files(config('app.name'));
+            $files = File::allFiles(storage_path('app/private/'.config('app.name')));
+            $data = [];
+            foreach($files as $file){
+                $data[] = [
+                    'fileName' => $file->getFilename(),
+                    'fileSize' => $this->bytesToMB($file->getSize()),
+                    'fileDate' => date('Y-m-d H:i:s', $file->getMTime()),
+                ];
+            }
+        } else {
+            $sekolah = Sekolah::with(['kepala_sekolah' => function($query){
                 $query->where('semester_id', request()->semester_id);
-                $query->whereIn('tingkat', [11, 12, 13]);
-            })->select('rombongan_belajar_id', 'nama')->get(),
-            'rombel_4_tahun' => $plucked->all(),
-            'url_dapodik' => get_setting('url_dapodik', request()->sekolah_id),
-            'token_dapodik' => get_setting('token_dapodik', request()->sekolah_id),
-            'logo_sekolah' => get_setting('logo_sekolah', request()->sekolah_id),
-            'bg_login' => get_setting('bg_login'),
-            'periode' => substr(request()->semester_id, -1),
-            'sekolah' => $sekolah,
-        ];
+            }])->find(request()->sekolah_id);
+            $get_rombel_4_tahun = RombelEmpatTahun::with(['rombongan_belajar'])->where('sekolah_id', request()->sekolah_id)->where('semester_id', request()->semester_id)->get();
+            $rombel_4_tahun = RombelEmpatTahun::where('sekolah_id', request()->sekolah_id)->where('semester_id', request()->semester_id)->get();
+            $plucked = $rombel_4_tahun->pluck('rombongan_belajar_id');
+            $tendik = jenis_gtk('tendik')->all();
+            $guru = jenis_gtk('guru')->all();
+            $jenis_ptk = array_merge($tendik, $guru);
+            $data = [
+                'semester_id' => semester_id(),
+                'semester' => Semester::whereHas('tahun_ajaran', function($query){
+                    $query->where('periode_aktif', 1);
+                })->orderBy('semester_id', 'DESC')->get(),
+                'tanggal_rapor' => get_setting('tanggal_rapor', request()->sekolah_id, request()->semester_id),
+                'tanggal_rapor_kelas_akhir' => get_setting('tanggal_rapor_kelas_akhir', request()->sekolah_id, request()->semester_id),
+                'kepala_sekolah' => ($sekolah->kepala_sekolah) ? $sekolah->kepala_sekolah->guru_id : $sekolah->guru_id,
+                'jabatan' => get_setting('jabatan', request()->sekolah_id, request()->semester_id),
+                'zona' => get_setting('zona', request()->sekolah_id),
+                'data_guru' => Ptk::where(function($query) use ($jenis_ptk){
+                    $query->where('sekolah_id', request()->sekolah_id);
+                    $query->whereIn('jenis_ptk_id', $jenis_ptk);
+                })->select('guru_id', 'nama', 'gelar_depan', 'gelar_belakang')->orderBy('nama')->get(),
+                'data_rombel' => RombonganBelajar::where(function($query){
+                    $query->where('jenis_rombel', 1);
+                    $query->where('sekolah_id', request()->sekolah_id);
+                    $query->where('semester_id', request()->semester_id);
+                    $query->whereIn('tingkat', [11, 12, 13]);
+                })->select('rombongan_belajar_id', 'nama')->get(),
+                'rombel_4_tahun' => $plucked->all(),
+                'url_dapodik' => get_setting('url_dapodik', request()->sekolah_id),
+                'token_dapodik' => get_setting('token_dapodik', request()->sekolah_id),
+                'logo_sekolah' => get_setting('logo_sekolah', request()->sekolah_id),
+                'bg_login' => get_setting('bg_login'),
+                'periode' => substr(request()->semester_id, -1),
+                'sekolah' => $sekolah,
+            ];
+        }
         return response()->json($data);
+    }
+    private function bytesToMB($bytes) {
+        return number_format($bytes / (1024 * 1024), 2);
     }
     public function update(Request $request){
         $request->validate(
@@ -584,6 +601,65 @@ class SettingController extends Controller
             'github' => $github,
             'cekDiff' => cekDiff($local, $github),
         ];
+        return response()->json($data);
+    }
+    public function proses_backup(){
+        Storage::deleteDirectory('app/backup-temp');
+        $exitCode = Artisan::call('backup:run --only-db');
+        $output = Artisan::output();
+        $array = Str::of($output)->explode("\r\n")->all();
+        $filteredArray = collect($array)->reject(function ($value) {
+            return Str::contains($value, '#');
+        })->all();
+        $uniqueArray = collect($filteredArray)->unique()->all();
+        $final = array_filter($uniqueArray);
+        if ($exitCode === 0) {
+            return response()->json([
+                'message' => 'Backup berhasil dijalankan', 
+                'output' => $final,
+                'exitCode' => $exitCode,
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'Backup gagal dijalankan', 
+                'output' => $final,
+                'exitCode' => $exitCode,
+            ]);
+        }
+    }
+    public function upload_restore(){
+        request()->validate(
+            [
+                'zip_file' => 'required|mimes:zip',
+            ],
+            [
+                'zip_file.required' => 'Berkas Database tidak boleh kosong.',
+                'zip_file.mimes' => 'Berkas Database harus berekstensi .ZIP',
+            ]
+        );
+        $file = request()->zip_file->store(config('app.name'), 'local');
+    }
+    public function proses_restore($file){
+        $options = [
+            '--backup' => $file,
+            '--quiet' => true,
+        ];
+        Artisan::call('backup:restore', $options);
+    }
+    public function hapus_file(){
+        if(Storage::disk('local')->delete(config('app.name').'/'.request()->zip_file)){
+            $data = [
+                'color' => 'success',
+                'title' => 'Berhasil!',
+                'text' => 'Berkas backup berhasil dihapus',
+            ];
+        } else {
+            $data = [
+                'color' => 'error',
+                'title' => 'Gagal!',
+                'text' => 'Berkas backup gagal dihapus. Silahkan coba beberapa saat lagi!',
+            ];
+        }
         return response()->json($data);
     }
 }

@@ -66,6 +66,10 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/github', [SettingController::class, 'github']);
         Route::get('/check-update', [SettingController::class, 'check_update']);
         Route::post('/proses-update', [SettingController::class, 'proses_update']);
+        Route::post('/proses-backup', [SettingController::class, 'proses_backup']);
+        Route::get('/unduh-backup/{file}', [SettingController::class, 'unduh_backup']);
+        Route::post('/upload-restore', [SettingController::class, 'upload_restore']);
+        Route::post('/hapus-file', [SettingController::class, 'hapus_file']);
     });
     Route::group(['prefix' => 'referensi'], function () {
         Route::group(['prefix' => 'ptk'], function () {

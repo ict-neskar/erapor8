@@ -158,8 +158,8 @@ const fetchData = async () => {
             <VRow>
               <!-- email -->
               <VCol cols="12">
-                <AppTextField v-model="form.email" :error-messages="errors.email" autofocus label="Email/NUPTK/NISN"
-                  placeholder="Email/NUPTK/NISN" :rules="[requiredValidator]" />
+                <AppTextField v-model="form.email" :error-messages="errors.email || errors.username" autofocus
+                  label="Email/NUPTK/NISN" placeholder="Email/NUPTK/NISN" :rules="[requiredValidator]" />
               </VCol>
 
               <!-- password -->

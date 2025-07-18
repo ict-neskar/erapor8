@@ -9,7 +9,7 @@ export const $api = ofetch.create({
     options.headers.append('accept', `application/json`)
   },
   async onResponseError({ request, response, options }) {
-    if(response.status === 401){
+    if (response.status === 401) {
       useCookie('userAbilityRules').value = null
       useCookie('userData').value = null
       useCookie('accessToken').value = null

@@ -32,11 +32,11 @@ const emit = defineEmits([
 
 <template>
   <!-- confirmed -->
-  <VDialog :model-value="props.isDialogVisible"
-    @update:model-value="updateModelValue" max-width="500">
+  <VDialog :model-value="props.isDialogVisible" @update:model-value="updateModelValue" max-width="500">
     <VCard>
       <VCardText class="text-center px-10 py-6">
-        <VBtn icon variant="outlined" :color="props.confirmColor" class="my-4" style=" block-size: 88px;inline-size: 88px; pointer-events: none;">
+        <VBtn icon variant="outlined" :color="props.confirmColor" class="my-4"
+          style=" block-size: 88px;inline-size: 88px; pointer-events: none;">
           <VIcon :icon="(props.confirmColor == 'success') ? 'tabler-checks' : 'tabler-xbox-x'" size="38" />
         </VBtn>
         <h1 class="text-h4 mb-4">

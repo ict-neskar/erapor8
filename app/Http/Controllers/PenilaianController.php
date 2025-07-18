@@ -648,6 +648,7 @@ class PenilaianController extends Controller
                         ],
                         [
                             'nilai' => ($row[4] >= 0 && $row[4] <= 100) ? number_format($row[4], 0) : 0,
+                            'last_sync' => now(),
                         ]
                     );
                 }
