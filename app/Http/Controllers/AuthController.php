@@ -27,7 +27,7 @@ class AuthController extends Controller
             'semester' => Semester::whereHas('tahun_ajaran', function($query){
                 $query->where('periode_aktif', 1);
             })->orderBy('semester_id', 'DESC')->get(),
-            'semester_id' => Semester::where('periode_aktif', 1)->first()->semester_id,
+            'semester_id' => Semester::where('periode_aktif', 1)->first()?->semester_id,
             'allowRegister' => config('app.registration'),
             'sekolah' => Sekolah::count(),
             'bg_login' => get_setting('bg_login'),

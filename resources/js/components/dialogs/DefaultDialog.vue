@@ -40,6 +40,8 @@ const onCancel = () => {
   emit('update:isDialogVisible', false)
 }
 watch(props, () => {
+  console.log(props.isDialogVisible);
+
   if (!props.isDialogVisible) {
     confirmed.value = false
   }
