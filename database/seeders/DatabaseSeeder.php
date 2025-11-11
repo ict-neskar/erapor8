@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
 			StatusKepegawaianSeeder::class,
 			TeknikSeeder::class,
 			KDSeeder::class,
+			CpSeeder::class,
 		]);
     }
 }
