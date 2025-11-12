@@ -22,6 +22,9 @@ class Pembelajaran extends Model
 	{
 		return $this->belongsTo(MataPelajaran::class, 'mata_pelajaran_id', 'mata_pelajaran_id');
 	}
+	public function nilai_akhir(){
+		return $this->hasOne(NilaiAkhir::class, 'pembelajaran_id', 'pembelajaran_id');
+	}
 	public function all_nilai_akhir_pengetahuan(){
 		return $this->hasMany(NilaiAkhir::class, 'pembelajaran_id', 'pembelajaran_id')->where('kompetensi_id', 1);
 	}
