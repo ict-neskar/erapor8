@@ -87,7 +87,7 @@ class CetakController extends Controller
 			$pdf->getMpdf()->defaultfooterfontsize=7;
 			$pdf->getMpdf()->defaultfooterline=0;
 			$general_title = $get_siswa->peserta_didik->nama.' - '.$get_siswa->rombongan_belajar->nama;
-			$pdf->getMpdf()->SetFooter($general_title.'|{PAGENO}|Dicetak dari '.config('site.app_name').' v.'.get_setting('app_version'));
+			$pdf->getMpdf()->SetFooter($general_title.'|{PAGENO}|Dicetak dari '.config('app.name').' v.'.get_setting('app_version'));
 			$rapor_top = view('cetak.rapor_top', $params);
 			$identitas_sekolah = view('cetak.identitas_sekolah', $params);
 			$identitas_peserta_didik = view('cetak.identitas_peserta_didik', $params);

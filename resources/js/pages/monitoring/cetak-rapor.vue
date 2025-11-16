@@ -16,6 +16,7 @@ const form = ref({
   merdeka: false,
   rapor_pts: false,
   is_ppa: false,
+  is_new_ppa: true,
 })
 const arrayData = ref({
   rombel: [],
@@ -40,6 +41,7 @@ const getData = async (postData) => {
         form.value.merdeka = getData.merdeka
         form.value.rapor_pts = getData.rapor_pts
         form.value.is_ppa = getData.is_ppa
+        form.value.is_new_ppa = getData.is_new_ppa
       }
     },
   });
@@ -128,7 +130,7 @@ const changeRombel = async (val) => {
             <th class="text-center">Halaman Depan</th>
             <th class="text-center">Rapor Akademik</th>
             <th class="text-center" v-if="form.rapor_pts">Rapor Tengah Semester</th>
-            <th class="text-center" v-if="form.merdeka">Rapor P5</th>
+            <th class="text-center" v-if="form.merdeka && !form.is_new_ppa">Rapor P5</th>
             <th class="text-center">Dokumen Pendukung</th>
           </tr>
         </thead>
@@ -141,7 +143,12 @@ const changeRombel = async (val) => {
               <VBtn size="x-large" icon="tabler-file-type-pdf" color="success" variant="text"
                 :href="`/cetak/rapor-cover/${item.anggota_rombel.anggota_rombel_id}`" target="_blank" />
             </td>
-            <td class="text-center" v-if="form.merdeka || form.is_ppa">
+            <td class="text-center" v-if="form.is_new_ppa">
+              <VBtn size="x-large" icon="tabler-file-type-pdf" color="warning" variant="text"
+                :href="`/cetak/rapor-akademik/${item.anggota_rombel.anggota_rombel_id}/${form.sekolah_id}/${form.semester_id}`"
+                target="_blank" />
+            </td>
+            <td class="text-center" v-else-if="form.merdeka || form.is_ppa">
               <VBtn size="x-large" icon="tabler-file-type-pdf" color="warning" variant="text"
                 :href="`/cetak/rapor-nilai-akhir/${item.anggota_rombel.anggota_rombel_id}/${form.sekolah_id}/${form.semester_id}`"
                 target="_blank" />
@@ -156,7 +163,7 @@ const changeRombel = async (val) => {
                 :href="`/cetak/rapor-tengah-semester/${item.anggota_rombel.anggota_rombel_id}/${form.semester_id}`"
                 target="_blank" />
             </td>
-            <td class="text-center" v-if="form.merdeka">
+            <td class="text-center" v-if="form.merdeka && !form.is_new_ppa">
               <VBtn size="x-large" icon="tabler-file-type-pdf" color="info" variant="text"
                 :href="`/cetak/rapor-p5/${item.anggota_rombel.anggota_rombel_id}/${form.semester_id}`"
                 target="_blank" />

@@ -221,6 +221,7 @@ class MonitoringController extends Controller
             'merdeka' => $merdeka,
             'rapor_pts' => config('erapor.rapor_pts'),
             'is_ppa' => ($rombel) ? is_ppa($rombel->semester_id) : false,
+            'is_new_ppa' => ($rombel) ? is_new_ppa($rombel->semester_id) : false,
         ];
     }
     private function get_legger(){
