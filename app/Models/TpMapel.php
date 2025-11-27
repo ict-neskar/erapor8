@@ -15,4 +15,8 @@ class TpMapel extends Model
 	{
 		return $this->belongsTo(TujuanPembelajaran::class, 'tp_id', 'tp_id');
 	}
+	public function pembelajaran()
+	{
+		return $this->belongsTo(Pembelajaran::class, 'pembelajaran_id', 'pembelajaran_id');
+	}
 }

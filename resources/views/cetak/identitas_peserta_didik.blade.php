@@ -23,7 +23,7 @@
             <td style="width: 35%;padding:5px;">Tempat, Tanggal Lahir</td>
             <td style="width: 1%;">:</td>
             <td style="width: 58%">
-                {{ ucwords(strtolower($get_siswa->peserta_didik->tempat_lahir)) . ', ' . $get_siswa->peserta_didik->tanggal_lahir }}
+                {{ ucwords(strtolower($get_siswa->peserta_didik->tempat_lahir)) . ', ' . $get_siswa->peserta_didik->tanggal_lahir_indo }}
             </td>
         </tr>
         <tr>

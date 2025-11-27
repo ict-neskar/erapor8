@@ -205,6 +205,7 @@ class MonitoringController extends Controller
             $query->where('semester_id', request()->semester_id);
             $query->where('sekolah_id', request()->sekolah_id);
             $query->where('tingkat', request()->tingkat);
+            $query->where('jenis_rombel', 1);
         })->orderBy('nama')->get();
         return $data;
     }

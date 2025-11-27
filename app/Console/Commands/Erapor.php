@@ -45,7 +45,7 @@ class Erapor extends Command
                 $semester = Semester::where('periode_aktif', 1)->first();
                 if($user->hasRole('admin', $semester->nama)){
                     $sekolah = Sekolah::with(['user' => function($query) use ($semester){
-                        $query->whereRoleIs('admin', $semester->nama);
+                        $query->whereHasRole('admin', $semester->nama);
                     }])->find($user->sekolah_id);
                     if($sekolah){
                         $response = NULL;
@@ -68,7 +68,7 @@ class Erapor extends Command
                             $response = http_client('status', $data_sync);
                             $spinner->finish();
                         } catch (\Throwable $th) {
-                            $this->error('Terdeteksi ada repositori belum terinstall di aplikasi. Silahkan jalankan "composer update" di Command Prompt ini!');
+                            $this->error($th->getMessage());
                             exit;
                         }        
                         if($response){

@@ -885,8 +885,11 @@ class ReferensiController extends Controller
         ->when(request()->rombongan_belajar_id, function($query) {
             $query->where($this->kondisiTp());
         })
-        ->when(request()->pembelajaran_id, function($query) {
+        ->when(request()->mata_pelajaran_id, function($query) {
             $query->where($this->kondisiTp());
+            $query->whereHas('cp', function($query){
+                $query->where('mata_pelajaran_id', request()->mata_pelajaran_id);
+            });
         })
         ->paginate(request()->per_page);
         return response()->json(['status' => 'success', 'data' => $data]);
@@ -938,9 +941,9 @@ class ReferensiController extends Controller
         if(request()->aksi == 'mapping'){
             request()->validate(
                 [
-                    'tingkat' => 'required',
+                    //'tingkat' => 'required',
                     'tp_id' => 'required',
-                    'rombongan_belajar_id' => 'required',
+                    //'rombongan_belajar_id' => 'required',
                 ],
                 [
                     'tingkat.required' => 'Tingkat Kelas tidak boleh kosong!!',
@@ -955,28 +958,47 @@ class ReferensiController extends Controller
             } else {
                 $mata_pelajaran_id = $tp->kd->mata_pelajaran_id;
             }
-            foreach(request()->rombongan_belajar_id as $rombongan_belajar_id){
-                $pembelajaran = Pembelajaran::where(function($query) use ($rombongan_belajar_id, $mata_pelajaran_id){
-                    $query->where('guru_id', request()->guru_id);
-                    $query->where('semester_id', request()->semester_id);
-                    $query->where('sekolah_id', request()->sekolah_id);
-                    $query->where('mata_pelajaran_id', $mata_pelajaran_id);
-                    $query->where('rombongan_belajar_id', $rombongan_belajar_id);
-                    $query->orWhere('guru_pengajar_id', request()->guru_id);
-                    $query->where('semester_id', request()->semester_id);
-                    $query->where('sekolah_id', request()->sekolah_id);
-                    $query->where('mata_pelajaran_id', $mata_pelajaran_id);
-                    $query->where('rombongan_belajar_id', $rombongan_belajar_id);
-                })->get();
-                if($pembelajaran->count()){
-                    foreach($pembelajaran as $mapel){
-                        $insert++;
-                        TpMapel::updateOrCreate([
-                            'tp_id' => request()->tp_id,
-                            'pembelajaran_id' => $mapel->pembelajaran_id,
-                        ]);
+            if(request()->rombongan_belajar_id){
+                $pembelajaran_id = [];
+                foreach(request()->rombongan_belajar_id as $rombongan_belajar_id){
+                    $pembelajaran = Pembelajaran::where(function($query) use ($rombongan_belajar_id, $mata_pelajaran_id){
+                        $query->where('guru_id', request()->guru_id);
+                        $query->where('semester_id', request()->semester_id);
+                        $query->where('sekolah_id', request()->sekolah_id);
+                        $query->where('mata_pelajaran_id', $mata_pelajaran_id);
+                        $query->where('rombongan_belajar_id', $rombongan_belajar_id);
+                        $query->orWhere('guru_pengajar_id', request()->guru_id);
+                        $query->where('semester_id', request()->semester_id);
+                        $query->where('sekolah_id', request()->sekolah_id);
+                        $query->where('mata_pelajaran_id', $mata_pelajaran_id);
+                        $query->where('rombongan_belajar_id', $rombongan_belajar_id);
+                    })->get();
+                    if($pembelajaran->count()){
+                        foreach($pembelajaran as $mapel){
+                            $pembelajaran_id[] = $mapel->pembelajaran_id;
+                            $insert++;
+                            TpMapel::updateOrCreate([
+                                'tp_id' => request()->tp_id,
+                                'pembelajaran_id' => $mapel->pembelajaran_id,
+                            ]);
+                        }
                     }
                 }
+                $delete = TpMapel::whereNotIn('pembelajaran_id', $pembelajaran_id)->where('tp_id', request()->tp_id)->delete();
+                $insert = $insert + $delete;
+            } else {
+                $insert = TpMapel::whereHas('pembelajaran', function($query) use ($mata_pelajaran_id){
+                    $query->where(function($query) use ($mata_pelajaran_id){
+                        $query->where('guru_id', request()->guru_id);
+                        $query->where('semester_id', request()->semester_id);
+                        $query->where('sekolah_id', request()->sekolah_id);
+                        $query->where('mata_pelajaran_id', $mata_pelajaran_id);
+                        $query->orWhere('guru_pengajar_id', request()->guru_id);
+                        $query->where('semester_id', request()->semester_id);
+                        $query->where('sekolah_id', request()->sekolah_id);
+                        $query->where('mata_pelajaran_id', $mata_pelajaran_id);
+                    });
+                })->where('tp_id', request()->tp_id)->delete();
             }
             if($insert){
                 $data = [

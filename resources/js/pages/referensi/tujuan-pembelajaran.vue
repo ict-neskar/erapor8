@@ -13,7 +13,7 @@ const showKd = ref(false)
 const options = ref({
   tingkat: null,
   rombongan_belajar_id: null,
-  pembelajaran_id: null,
+  mata_pelajaran_id: null,
   page: 1,
   itemsPerPage: 10,
   searchQuery: '',
@@ -88,6 +88,7 @@ const fetchData = async () => {
         periode_aktif: $semester.nama,
         tingkat: options.value.tingkat,
         rombongan_belajar_id: options.value.rombongan_belajar_id,
+        mata_pelajaran_id: options.value.mata_pelajaran_id,
         q: options.value.searchQuery,
         page: options.value.page,
         per_page: options.value.itemsPerPage,
@@ -113,7 +114,7 @@ const notif = ref({
 const filter = ref({
   tingkat: null,
   rombongan_belajar_id: null,
-  pembelajaran_id: null,
+  mata_pelajaran_id: null,
 })
 const isNotifVisible = ref(false)
 const loadingRombel = ref(false)
@@ -125,7 +126,7 @@ const changeTingkat = async (val) => {
   data_rombel.value = []
   data_mapel.value = []
   filter.value.rombongan_belajar_id = null
-  filter.value.pembelajaran_id = null
+  filter.value.mata_pelajaran_id = null
   options.value.tingkat = val
   if (val) {
     await $api('/referensi/get-data', {
@@ -152,7 +153,7 @@ const changeTingkat = async (val) => {
 const changeRombel = async (val) => {
   data_mapel.value = []
   loadingMapel.value = true
-  filter.value.pembelajaran_id = null
+  filter.value.mata_pelajaran_id = null
   options.value.rombongan_belajar_id = val
   if (val) {
     await $api('/referensi/get-data', {
@@ -177,7 +178,7 @@ const changeRombel = async (val) => {
   }
 }
 const changeMapel = async (val) => {
-  options.value.pembelajaran_id = val
+  options.value.mata_pelajaran_id = val
 }
 const isDialogVisible = ref(false)
 const dialogTitle = ref('')
@@ -288,7 +289,7 @@ const postData = async () => {
         form.value = {
           tp_id: null,
           tingkat: null,
-          rombongan_belajar_id: null,
+          rombongan_belajar_id: [],
           mata_pelajaran_id: null,
           cp_id: null,
           kd_id: null,
@@ -316,7 +317,7 @@ const saveData = async (val) => {
     form.value = {
       tp_id: null,
       tingkat: null,
-      rombongan_belajar_id: null,
+      rombongan_belajar_id: [],
       mata_pelajaran_id: null,
       cp_id: null,
       kd_id: null,
@@ -430,8 +431,8 @@ const getRombel = (tp_mapel) => {
               item-title="nama" :loading="loadingRombel" :disabled="loadingRombel" />
           </VCol>
           <VCol cols="12" sm="4">
-            <AppSelect v-model="filter.pembelajaran_id" placeholder="== Filter Mapel ==" :items="data_mapel" clearable
-              clear-icon="tabler-x" @update:model-value="changeMapel" item-value="pembelajaran_id"
+            <AppSelect v-model="filter.mata_pelajaran_id" placeholder="== Filter Mapel ==" :items="data_mapel" clearable
+              clear-icon="tabler-x" @update:model-value="changeMapel" item-value="mata_pelajaran_id"
               item-title="nama_mata_pelajaran" :loading="loadingMapel" :disabled="loadingMapel" />
           </VCol>
         </VRow>
