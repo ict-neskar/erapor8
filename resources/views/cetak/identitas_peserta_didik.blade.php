@@ -185,8 +185,20 @@
                         style="width:113px; height:151px;  object-fit: cover; object-position: center;">
                 </td>
             @else
-                <td style="width: 50%;padding:5px; border:1px solid #000000;" rowspan="5" align="center">
-                    Pas Foto<br>3 x 4
+                <td style="width: 50%;padding:5px;" rowspan="5" align="center">
+                    <div
+                        style="
+                            width:113px;
+                            height:151px;
+                            border:1px solid #000;
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                            font-size:12px;
+                            text-align:center;
+                    ">
+                        Pas Foto<br>3 x 4
+                    </div>
                 </td>
             @endif
             <td style="width: 50%;padding:5px;">
