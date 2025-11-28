@@ -180,10 +180,18 @@
     <table width="100%" style="margin-top:50px;">
         <tr>
             <td style="width: 15%;padding:5px;" rowspan="5"></td>
-            <td style="width: 15%;padding:5px; border:1px solid #000000;" rowspan="5" align="center">
-                Pas Foto<br>3 x 4
-            </td>
             <td style="width: 15%;padding:5px;" rowspan="5">&nbsp;</td>
+
+            @if ($get_pas_foto != null)
+                <td style="width: 15%;padding:5px;" rowspan="5" align="center">
+                    <img src="{{ $get_pas_foto }}" width="125px" height="190px"
+                        style="object-fit: contain; object-position: center;">
+                </td>
+            @else
+                <td style="width: 15%;padding:5px; border:1px solid #000000;" rowspan="5" align="center">
+                    Pas Foto<br>3 x 4
+                </td>
+            @endif
             <td style="width: 50%;padding:5px;">
                 {{ str_replace('Kab. ', '', $get_siswa->peserta_didik->sekolah->kabupaten) }},
                 {{ $get_siswa->peserta_didik->diterima }}<br />{{ get_setting('jabatan', $get_siswa->sekolah_id, $get_siswa->semester_id) }}
