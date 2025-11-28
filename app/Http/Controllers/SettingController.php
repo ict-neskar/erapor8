@@ -20,6 +20,7 @@ use App\Models\Kasek;
 use App\Models\PesertaDidik;
 use App\Models\Pembelajaran;
 use App\Models\Ekstrakurikuler;
+use App\Models\StatusPenilaian;
 use Artisan;
 use Storage;
 use Config;
@@ -667,6 +668,11 @@ class SettingController extends Controller
                 'text' => 'Berkas backup gagal dihapus. Silahkan coba beberapa saat lagi!',
             ];
         }
+        return response()->json($data);
+    }
+    public function status_penilaian(){
+        $status_penilaian = StatusPenilaian::where('sekolah_id', request()->sekolah_id)->where('semester_id', request()->semester_id)->first();
+        $data = ($status_penilaian && $status_penilaian->status) ? TRUE: FALSE;
         return response()->json($data);
     }
 }

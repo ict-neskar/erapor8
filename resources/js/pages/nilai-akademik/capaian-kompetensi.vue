@@ -6,6 +6,27 @@ definePage({
     title: 'Capaian Kompetensi'
   },
 })
+const loadingBody = ref(true)
+const statusPenilaian = ref(true)
+const fetchData = async () => {
+  try {
+    const response = await $api('/setting/status-penilaian', {
+      method: 'POST',
+      body: {
+        sekolah_id: $user.sekolah_id,
+        semester_id: $semester.semester_id,
+      }
+    })
+    statusPenilaian.value = response
+  } catch (error) {
+    console.error(error);
+  } finally {
+    loadingBody.value = false;
+  }
+}
+onMounted(async () => {
+  await fetchData();
+});
 const form = ref({
   tingkat: null,
   rombongan_belajar_id: null,
@@ -42,12 +63,15 @@ const nilai = ref({
   kompeten: {},
   inkompeten: {},
 })
+const isKunciWalas = ref(false)
 const getData = async (postData) => {
   const mergedForm = { ...postData, ...defaultForm };
   await $api("/referensi/get-data", {
     method: "POST",
     body: mergedForm,
     onResponse({ response }) {
+      arrayData.value.siswa = []
+      showBtn.value = false
       let getData = response._data;
       if (postData.data == "rombel") {
         arrayData.value.rombel = getData;
@@ -55,6 +79,7 @@ const getData = async (postData) => {
       if (postData.data == "mapel") {
         arrayData.value.mapel = getData.mapel;
         defaultForm.merdeka = getData.merdeka
+        isKunciWalas.value = getData.rombel.kunci_nilai ? true : false
       }
     },
   });
@@ -238,69 +263,87 @@ const confirmDialog = async () => {
       <VCardTitle>Capaian Kompetensi</VCardTitle>
     </VCardItem>
     <VDivider />
-    <VForm @submit.prevent="onSubmit">
+    <template v-if="loadingBody">
+      <VCardText class="text-center">
+        <VProgressCircular :size="60" indeterminate color="error" class="my-10" />
+      </VCardText>
+    </template>
+    <template v-else-if="statusPenilaian">
+      <VForm @submit.prevent="onSubmit">
+        <VCardText>
+          <VRow>
+            <DefaultForm v-model:form="form" v-model:errors="errors" v-model:arrayData="arrayData"
+              v-model:loading="loading" v-model:resetForm="resetForm" v-model:isKunci="isKunciWalas"
+              @tingkat="changeTingkat" @rombongan_belajar_id="changeRombel" @pembelajaran_id="changeMapel">
+            </DefaultForm>
+            <VCol cols="12" v-if="showReset">
+              <VRow no-gutters>
+                <VCol cols="12" md="3" class="d-flex align-items-center">
+                  <label class="v-label text-body-2 text-high-emphasis">Reset Capaian Kompetensi</label>
+                </VCol>
+                <VCol cols="12" md="9">
+                  <VBtn variant="tonal" color="error" @click="resetData">
+                    Reset Capaian Kompetensi
+                  </VBtn>
+                </VCol>
+              </VRow>
+            </VCol>
+          </VRow>
+          <div class="text-center" v-if="loading.body">
+            <VProgressCircular :size="60" indeterminate color="error" class="my-10" />
+          </div>
+          <VAlert color="error" class="text-center my-4" variant="tonal" v-if="isKunciWalas">
+            <h2 class="mt-4 mb-4">Penilaian tidak aktif. Silahkan hubungi Wali Kelas!</h2>
+          </VAlert>
+        </VCardText>
+        <template v-if="arrayData.siswa.length">
+          <VTable>
+            <thead>
+              <tr>
+                <th class="text-center" rowspan="2" style="vertical-align:middle">No</th>
+                <th class="text-center" rowspan="2" style="vertical-align:middle">Nama Peserta Didik</th>
+                <th class="text-center" rowspan="2" style="vertical-align:middle">Nilai Akhir</th>
+                <th class="text-center" colspan="2">Capaian Kompetensi</th>
+              </tr>
+              <tr>
+                <th class="text-center">Kompetensi yang telah dicapai</th>
+                <th class="text-center">Kompetensi yang perlu ditingkatkan</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(siswa, index) in arrayData.siswa">
+                <td class="text-center">{{ index + 1 }}</td>
+                <td>
+                  <ProfileSiswa :item="siswa" />
+                </td>
+                <td class="text-center">{{ nilai.angka[siswa.anggota_rombel.anggota_rombel_id] }}</td>
+                <td>
+                  <AppTextarea v-model="nilai.kompeten[siswa.anggota_rombel.anggota_rombel_id]"
+                    placeholder="Kompetensi yang telah dicapai" class="py-2 px-2" />
+                </td>
+                <td>
+                  <AppTextarea v-model="nilai.inkompeten[siswa.anggota_rombel.anggota_rombel_id]"
+                    placeholder="Kompetensi yang perlu ditingkatkan" />
+                </td>
+              </tr>
+            </tbody>
+          </VTable>
+        </template>
+        <VDivider />
+        <VCardText class="d-flex justify-end flex-wrap gap-3 pt-5 overflow-visible" v-if="showBtn">
+          <VBtn variant="elevated" type="submit" :loading="confirmed" :disabled="confirmed">
+            Simpan
+          </VBtn>
+        </VCardText>
+      </VForm>
+    </template>
+    <template v-else>
       <VCardText>
-        <VRow>
-          <DefaultForm v-model:form="form" v-model:errors="errors" v-model:arrayData="arrayData"
-            v-model:loading="loading" v-model:resetForm="resetForm" @tingkat="changeTingkat"
-            @rombongan_belajar_id="changeRombel" @pembelajaran_id="changeMapel"></DefaultForm>
-          <VCol cols="12" v-if="showReset">
-            <VRow no-gutters>
-              <VCol cols="12" md="3" class="d-flex align-items-center">
-                <label class="v-label text-body-2 text-high-emphasis">Reset Capaian Kompetensi</label>
-              </VCol>
-              <VCol cols="12" md="9">
-                <VBtn variant="tonal" color="error" @click="resetData">
-                  Reset Capaian Kompetensi
-                </VBtn>
-              </VCol>
-            </VRow>
-          </VCol>
-        </VRow>
-        <div class="text-center" v-if="loading.body">
-          <VProgressCircular :size="60" indeterminate color="error" class="my-10" />
-        </div>
+        <VAlert color="error" class="text-center my-4" variant="tonal">
+          <h2 class="mt-4 mb-4">Penilaian tidak aktif. Silahkan hubungi administrator!</h2>
+        </VAlert>
       </VCardText>
-      <template v-if="arrayData.siswa.length">
-        <VTable>
-          <thead>
-            <tr>
-              <th class="text-center" rowspan="2" style="vertical-align:middle">No</th>
-              <th class="text-center" rowspan="2" style="vertical-align:middle">Nama Peserta Didik</th>
-              <th class="text-center" rowspan="2" style="vertical-align:middle">Nilai Akhir</th>
-              <th class="text-center" colspan="2">Capaian Kompetensi</th>
-            </tr>
-            <tr>
-              <th class="text-center">Kompetensi yang telah dicapai</th>
-              <th class="text-center">Kompetensi yang perlu ditingkatkan</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(siswa, index) in arrayData.siswa">
-              <td class="text-center">{{ index + 1 }}</td>
-              <td>
-                <ProfileSiswa :item="siswa" />
-              </td>
-              <td class="text-center">{{ nilai.angka[siswa.anggota_rombel.anggota_rombel_id] }}</td>
-              <td>
-                <AppTextarea v-model="nilai.kompeten[siswa.anggota_rombel.anggota_rombel_id]"
-                  placeholder="Kompetensi yang telah dicapai" class="py-2 px-2" />
-              </td>
-              <td>
-                <AppTextarea v-model="nilai.inkompeten[siswa.anggota_rombel.anggota_rombel_id]"
-                  placeholder="Kompetensi yang perlu ditingkatkan" />
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
-      </template>
-      <VDivider />
-      <VCardText class="d-flex justify-end flex-wrap gap-3 pt-5 overflow-visible" v-if="showBtn">
-        <VBtn variant="elevated" type="submit" :loading="confirmed" :disabled="confirmed">
-          Simpan
-        </VBtn>
-      </VCardText>
-    </VForm>
+    </template>
     <ConfirmDialog v-model:isDialogVisible="isConfirmDialogVisible" v-model:isNotifVisible="isNotifVisible"
       confirmation-question="Apakah Anda yakin?" :confirmation-text="confirmationText" :confirm-color="notif.color"
       :confirm-title="notif.title" :confirm-msg="notif.text" @confirm="confirmDialog" @close="confirmClose" />

@@ -70,6 +70,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/unduh-backup/{file}', [SettingController::class, 'unduh_backup']);
         Route::post('/upload-restore', [SettingController::class, 'upload_restore']);
         Route::post('/hapus-file', [SettingController::class, 'hapus_file']);
+        Route::post('/status-penilaian', [SettingController::class, 'status_penilaian']);
     });
     Route::group(['prefix' => 'referensi'], function () {
         Route::group(['prefix' => 'ptk'], function () {

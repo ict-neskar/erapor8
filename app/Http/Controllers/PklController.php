@@ -231,6 +231,30 @@ class PklController extends Controller
                 );
                 $insert++;
             }
+        } elseif(request()->aksi == 'hapus'){
+            $find = PraktikKerjaLapangan::find(request()->pkl_id);
+            if($find){
+                if($find->delete()){
+                    $data = [
+                        'color' => 'success',
+                        'title' => 'Berhasil!',
+                        'text' => 'Rencana Penilaian PKL berhasil dihapus',
+                    ];
+                } else {
+                    $data = [
+                        'color' => 'error',
+                        'title' => 'Gagal!',
+                        'text' => 'Rencana Penilaian PKL Gagal dihapus',
+                    ];
+                }
+            } else {
+                $data = [
+                    'color' => 'error',
+                    'title' => 'Gagal!',
+                    'text' => 'Rencana Penilaian PKL tidak ditemukan',
+                ];
+            }
+            return response()->json($data);
         } else {
             request()->validate(
                 [

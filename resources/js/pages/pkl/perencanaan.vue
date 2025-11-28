@@ -153,6 +153,7 @@ const notif = ref({
   text: null,
 })
 const dialogTitle = ref()
+const pklID = ref()
 const addNewData = () => {
   form.value.aksi = 'add'
   isDialogVisible.value = true
@@ -161,6 +162,7 @@ const addNewData = () => {
 const aksi = async (aksi, item) => {
   form.value.aksi = aksi
   form.value.pkl_id = item.pkl_id
+  pklID.value = item.pkl_id
   if (aksi == 'hapus') {
     isConfirmDialogVisible.value = true
   } else {

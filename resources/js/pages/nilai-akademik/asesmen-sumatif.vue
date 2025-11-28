@@ -6,6 +6,27 @@ definePage({
     title: "Input Asesmen",
   },
 });
+const loadingBody = ref(true)
+const statusPenilaian = ref(true)
+const fetchData = async () => {
+  try {
+    const response = await $api('/setting/status-penilaian', {
+      method: 'POST',
+      body: {
+        sekolah_id: $user.sekolah_id,
+        semester_id: $semester.semester_id,
+      }
+    })
+    statusPenilaian.value = response
+  } catch (error) {
+    console.error(error);
+  } finally {
+    loadingBody.value = false;
+  }
+}
+onMounted(async () => {
+  await fetchData();
+});
 const namaTemplate = ref('')
 const linkTemplateTp = ref('')
 const form = ref({
@@ -130,6 +151,9 @@ const getData = async (postData) => {
     method: "POST",
     body: mergedForm,
     onResponse({ response }) {
+      arrayData.value.siswa = []
+      noTp.value = false
+      showBtn.value = false
       let getData = response._data;
       if (postData.data == "rombel") {
         arrayData.value.rombel = getData;
@@ -313,128 +337,146 @@ const onFileChange = async (val) => {
       <VCardTitle>Input Asesmen</VCardTitle>
     </VCardItem>
     <VDivider />
-    <VForm @submit.prevent="onSubmit">
-      <VCardText>
-        <VRow>
-          <DefaultForm v-model:form="form" v-model:errors="errors" v-model:arrayData="arrayData"
-            v-model:loading="loading" v-model:resetForm="resetForm" v-model:isKunci="isKunciWalas"
-            @tingkat="changeTingkat" @rombongan_belajar_id="changeRombel" @pembelajaran_id="changeMapel"></DefaultForm>
-          <VCol cols="12">
-            <VRow no-gutters>
-              <VCol cols="12" md="3" class="d-flex align-items-center">
-                <label class="v-label text-body-2 text-high-emphasis" for="teknik_penilaian_id">Jenis Asesmen</label>
-              </VCol>
-              <VCol cols="12" md="9">
-                <AppSelect v-model="form.teknik_penilaian_id" placeholder="== Pilih Jenis Asesmen =="
-                  :items="arrayData.teknik" clearable clear-icon="tabler-x" @update:model-value="changeTeknik"
-                  item-value="teknik_penilaian_id" item-title="nama" :error-messages="errors.teknik_penilaian_id"
-                  :loading="loading.teknik_penilaian_id" :disabled="loading.teknik_penilaian_id || isKunciWalas" />
-              </VCol>
-            </VRow>
-          </VCol>
-          <VCol cols="12" v-if="arrayData.siswa.length">
-            <VRow no-gutters>
-              <VCol cols="12" md="3" class="d-flex align-items-center">
-                <label class="v-label text-body-2 text-high-emphasis" for="template_excel">Template Excel</label>
-              </VCol>
-              <VCol cols="12" md="9">
-                <VRow no-gutters>
-                  <VCol cols="6">
-                    <VFileInput id="template_excel" v-model="form.template_excel"
-                      :error-messages="errors.template_excel" @update:model-value="onFileChange"
-                      accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-                      label="Unggah Template Excel" />
-                  </VCol>
-                  <VCol cols="6">
-                    <VBtn color="primary" class="ms-3" :href="linkTemplateTp" target="_blank">
-                      Unduh Template {{ namaTemplate }}
-                    </VBtn>
-                  </VCol>
-                </VRow>
-              </VCol>
-            </VRow>
-          </VCol>
-        </VRow>
-        <div class="text-center" v-if="loading.body">
-          <VProgressCircular :size="60" indeterminate color="error" class="my-10" />
-        </div>
-        <VAlert color="error" class="text-center my-4" variant="tonal" v-if="noTp">
-          <h2 class="mt-4 mb-4">Tidak ditemukan data Tujuan Pembelajaran</h2>
-          <p>
-            Silahkan tambah data Tujuan Pembelajaran terlebih dahulu
-            <router-link :to="{ name: 'referensi-tujuan-pembelajaran' }">disini</router-link>
-          </p>
-        </VAlert>
+    <template v-if="loadingBody">
+      <VCardText class="text-center">
+        <VProgressCircular :size="60" indeterminate color="error" class="my-10" />
       </VCardText>
-      <VDivider />
-      <template v-if="arrayData.siswa.length && !uploading">
-        <VTable class="text-no-wrap">
-          <thead>
-            <tr>
-              <th class="text-center">Nama Peserta Didik</th>
-              <template v-if="showCp">
-                <template v-for="(tp, i) in arrayData.tp">
-                  <th class="text-center">
-                    {{ `TP ${i + 1}` }}
-                    <VTooltip location="top" activator="parent" transition="scale-transition">
-                      {{ tp.deskripsi }}
-                    </VTooltip>
-                  </th>
+    </template>
+    <template v-else-if="statusPenilaian">
+      <VForm @submit.prevent="onSubmit">
+        <VCardText>
+          <VRow>
+            <DefaultForm v-model:form="form" v-model:errors="errors" v-model:arrayData="arrayData"
+              v-model:loading="loading" v-model:resetForm="resetForm" v-model:isKunci="isKunciWalas"
+              @tingkat="changeTingkat" @rombongan_belajar_id="changeRombel" @pembelajaran_id="changeMapel">
+            </DefaultForm>
+            <VCol cols="12">
+              <VRow no-gutters>
+                <VCol cols="12" md="3" class="d-flex align-items-center">
+                  <label class="v-label text-body-2 text-high-emphasis" for="teknik_penilaian_id">Jenis Asesmen</label>
+                </VCol>
+                <VCol cols="12" md="9">
+                  <AppSelect v-model="form.teknik_penilaian_id" placeholder="== Pilih Jenis Asesmen =="
+                    :items="arrayData.teknik" clearable clear-icon="tabler-x" @update:model-value="changeTeknik"
+                    item-value="teknik_penilaian_id" item-title="nama" :error-messages="errors.teknik_penilaian_id"
+                    :loading="loading.teknik_penilaian_id" :disabled="loading.teknik_penilaian_id || isKunciWalas" />
+                </VCol>
+              </VRow>
+            </VCol>
+            <VCol cols="12" v-if="arrayData.siswa.length">
+              <VRow no-gutters>
+                <VCol cols="12" md="3" class="d-flex align-items-center">
+                  <label class="v-label text-body-2 text-high-emphasis" for="template_excel">Template Excel</label>
+                </VCol>
+                <VCol cols="12" md="9">
+                  <VRow no-gutters>
+                    <VCol cols="6">
+                      <VFileInput id="template_excel" v-model="form.template_excel"
+                        :error-messages="errors.template_excel" @update:model-value="onFileChange"
+                        accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                        label="Unggah Template Excel" />
+                    </VCol>
+                    <VCol cols="6">
+                      <VBtn color="primary" class="ms-3" :href="linkTemplateTp" target="_blank">
+                        Unduh Template {{ namaTemplate }}
+                      </VBtn>
+                    </VCol>
+                  </VRow>
+                </VCol>
+              </VRow>
+            </VCol>
+          </VRow>
+          <div class="text-center" v-if="loading.body">
+            <VProgressCircular :size="60" indeterminate color="error" class="my-10" />
+          </div>
+          <VAlert color="error" class="text-center my-4" variant="tonal" v-if="noTp">
+            <h2 class="mt-4 mb-4">Tidak ditemukan data Tujuan Pembelajaran</h2>
+            <p>
+              Silahkan tambah data Tujuan Pembelajaran terlebih dahulu
+              <router-link :to="{ name: 'referensi-tujuan-pembelajaran' }">disini</router-link>
+            </p>
+          </VAlert>
+          <VAlert color="error" class="text-center my-4" variant="tonal" v-if="isKunciWalas">
+            <h2 class="mt-4 mb-4">Penilaian tidak aktif. Silahkan hubungi Wali Kelas!</h2>
+          </VAlert>
+        </VCardText>
+        <VDivider />
+        <template v-if="arrayData.siswa.length && !uploading">
+          <VTable class="text-no-wrap">
+            <thead>
+              <tr>
+                <th class="text-center">Nama Peserta Didik</th>
+                <template v-if="showCp">
+                  <template v-for="(tp, i) in arrayData.tp">
+                    <th class="text-center">
+                      {{ `TP ${i + 1}` }}
+                      <VTooltip location="top" activator="parent" transition="scale-transition">
+                        {{ tp.deskripsi }}
+                      </VTooltip>
+                    </th>
+                  </template>
                 </template>
-              </template>
-              <template v-else>
-                <th class="text-center">Non Tes</th>
-                <th class="text-center">Tes</th>
-                <th class="text-center">NA Sumatif Akhir Semester</th>
-              </template>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(siswa, index) in arrayData.siswa">
-              <td>
-                <ProfileSiswa :item="siswa" />
-              </td>
-              <template v-if="showCp">
-                <template v-for="(tp, i) in arrayData.tp">
+                <template v-else>
+                  <th class="text-center">Non Tes</th>
+                  <th class="text-center">Tes</th>
+                  <th class="text-center">NA Sumatif Akhir Semester</th>
+                </template>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(siswa, index) in arrayData.siswa">
+                <td>
+                  <ProfileSiswa :item="siswa" />
+                </td>
+                <template v-if="showCp">
+                  <template v-for="(tp, i) in arrayData.tp">
+                    <td>
+                      <div style="inline-size: 4rem">
+                        <AppTextField type="number" v-model="nilai.tp[
+                          siswa.anggota_rombel.anggota_rombel_id + '#' + tp.tp_id
+                        ]
+                          " />
+                      </div>
+                    </td>
+                  </template>
+                </template>
+                <template v-else>
                   <td>
-                    <div style="inline-size: 4rem">
-                      <AppTextField type="number" v-model="nilai.tp[
-                        siswa.anggota_rombel.anggota_rombel_id + '#' + tp.tp_id
-                      ]
+                    <AppTextField type="number" v-model="nilai.sumatif[siswa.anggota_rombel.anggota_rombel_id + '#non-tes']
+                      " @update:model-value="
+                        setRerata(siswa.anggota_rombel.anggota_rombel_id, '#non-tes')
                         " />
-                    </div>
+                  </td>
+                  <td>
+                    <AppTextField type="number" v-model="nilai.sumatif[siswa.anggota_rombel.anggota_rombel_id + '#tes']
+                      " @update:model-value="
+                        setRerata(siswa.anggota_rombel.anggota_rombel_id, '#tes')
+                        " />
+                  </td>
+                  <td>
+                    <AppTextField type="number" v-model="nilai.sumatif[siswa.anggota_rombel.anggota_rombel_id + '#na']
+                      " disabled />
                   </td>
                 </template>
-              </template>
-              <template v-else>
-                <td>
-                  <AppTextField type="number" v-model="nilai.sumatif[siswa.anggota_rombel.anggota_rombel_id + '#non-tes']
-                    " @update:model-value="
-                      setRerata(siswa.anggota_rombel.anggota_rombel_id, '#non-tes')
-                      " />
-                </td>
-                <td>
-                  <AppTextField type="number" v-model="nilai.sumatif[siswa.anggota_rombel.anggota_rombel_id + '#tes']
-                    " @update:model-value="
-                      setRerata(siswa.anggota_rombel.anggota_rombel_id, '#tes')
-                      " />
-                </td>
-                <td>
-                  <AppTextField type="number" v-model="nilai.sumatif[siswa.anggota_rombel.anggota_rombel_id + '#na']
-                    " disabled />
-                </td>
-              </template>
-            </tr>
-          </tbody>
-        </VTable>
-      </template>
-      <VDivider />
-      <VCardText class="d-flex justify-end flex-wrap gap-3 pt-5 overflow-visible" v-if="showBtn">
-        <VBtn variant="elevated" type="submit" :loading="confirmed" :disabled="confirmed">
-          Simpan
-        </VBtn>
+              </tr>
+            </tbody>
+          </VTable>
+        </template>
+        <VDivider />
+        <VCardText class="d-flex justify-end flex-wrap gap-3 pt-5 overflow-visible" v-if="showBtn">
+          <VBtn variant="elevated" type="submit" :loading="confirmed" :disabled="confirmed">
+            Simpan
+          </VBtn>
+        </VCardText>
+      </VForm>
+    </template>
+    <template v-else>
+      <VCardText>
+        <VAlert color="error" class="text-center my-4" variant="tonal">
+          <h2 class="mt-4 mb-4">Penilaian tidak aktif. Silahkan hubungi administrator!</h2>
+        </VAlert>
       </VCardText>
-    </VForm>
+    </template>
     <ConfirmDialog v-model:isDialogVisible="isConfirmDialogVisible" v-model:isNotifVisible="isNotifVisible"
       confirmation-question="Apakah Anda yakin?" :confirmation-text="confirmationText" :confirm-color="notif.color"
       :confirm-title="notif.title" :confirm-msg="notif.text" @close="confirmClose" />
