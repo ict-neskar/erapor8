@@ -4,8 +4,7 @@
         <br>
         <br>
         <br>
-        <img src="{{ $get_siswa->rombongan_belajar->sekolah && $get_siswa->rombongan_belajar->sekolah->logo_sekolah ? public_path('./storage' . config('erapor.storage') . '/images/' . $get_siswa->rombongan_belajar->sekolah->logo_sekolah) : public_path('./images/tutwuri.png') }}"
-            style="max-height: 200px" />
+        <img src="{{ $get_logo_sekolah }}" style="max-height: 200px" />
         <br>
         <br>
         <br>
