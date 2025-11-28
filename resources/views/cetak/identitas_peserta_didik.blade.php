@@ -179,18 +179,25 @@
     </table>
     <table width="100%" style="margin-top:50px;">
         <tr>
-            <td style="width: 50%; padding:5px;" rowspan="4">
-                @if ($get_pas_foto != null)
-                    <div
-                        style="border:1px solid #000; width:100px; height:130px; display:flex; justify-content:center; align-items:center;">
-                        <img src="{{ $get_pas_foto }}" style="height: 128px; width: auto; object-fit: contain;">
-                    </div>
-                @else
-                    <div
-                        style="border:1px solid #000; width:100px; height:130px; display:flex; justify-content:center; align-items:center; text-align:center;">
+            <td style="width: 50%; padding:5px;">
+                <div
+                    style="
+                    width: 113px;
+                    height: 151px;
+                    border: 2px solid #000;
+                    margin-left: 60px; /* jarak dari kiri biar tidak mepet */
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    text-align: center;
+                    font-size: 12px;
+                ">
+                    @if ($get_pas_foto)
+                        <img src="{{ $get_pas_foto }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    @else
                         Pas Foto<br>3 x 4
-                    </div>
-                @endif
+                    @endif
+                </div>
             </td>
 
             <td style="width: 50%; padding:5px;">
