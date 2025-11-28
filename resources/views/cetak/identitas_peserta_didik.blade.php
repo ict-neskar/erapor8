@@ -179,37 +179,43 @@
     </table>
     <table width="100%" style="margin-top:50px;">
         <tr>
-            <td style="width: 15%;padding:5px;" rowspan="5"></td>
-            <td style="width: 15%;padding:5px;" rowspan="5">&nbsp;</td>
+            <td style="width: 50%; padding:5px;" rowspan="4">
+                @if ($get_pas_foto != null)
+                    <div
+                        style="border:1px solid #000; width:100px; height:130px; display:flex; justify-content:center; align-items:center;">
+                        <img src="{{ $get_pas_foto }}" style="height: 128px; width: auto; object-fit: contain;">
+                    </div>
+                @else
+                    <div
+                        style="border:1px solid #000; width:100px; height:130px; display:flex; justify-content:center; align-items:center; text-align:center;">
+                        Pas Foto<br>3 x 4
+                    </div>
+                @endif
+            </td>
 
-            @if ($get_pas_foto != null)
-                <td style="width: 15%;padding:5px;" rowspan="5" align="center">
-                    <img src="{{ $get_pas_foto }}" width="125px" height="190px"
-                        style="object-fit: contain; object-position: center;">
-                </td>
-            @else
-                <td style="width: 15%;padding:5px; border:1px solid #000000;" rowspan="5" align="center">
-                    Pas Foto<br>3 x 4
-                </td>
-            @endif
-            <td style="width: 50%;padding:5px;">
+            <td style="width: 50%; padding:5px;">
                 {{ str_replace('Kab. ', '', $get_siswa->peserta_didik->sekolah->kabupaten) }},
-                {{ $get_siswa->peserta_didik->diterima }}<br />{{ get_setting('jabatan', $get_siswa->sekolah_id, $get_siswa->semester_id) }}
+                {{ $get_siswa->peserta_didik->diterima }}<br />
+                {{ get_setting('jabatan', $get_siswa->sekolah_id, $get_siswa->semester_id) }}
             </td>
         </tr>
+
         <tr>
-            <td style="width: 50%;padding:5px;">&nbsp;</td>
+            <td style="width: 50%; padding: 30px 5px;">&nbsp;</td>
         </tr>
+
         <tr>
-            <td style="width: 50%;padding:5px;">&nbsp;</td>
-        </tr>
-        <tr>
-            <td style="width: 50%;padding:5px;">&nbsp;</td>
-        </tr>
-        <tr>
-            <td style="width: 50%;padding:5px;">
-                {{ $get_siswa->peserta_didik->sekolah->kasek ? $get_siswa->peserta_didik->sekolah->kasek->nama_lengkap : $get_siswa->peserta_didik->sekolah->kepala_sekolah?->nama_lengkap }}<br />NIP.
-                {{ $get_siswa->peserta_didik->sekolah->kasek ? $get_siswa->peserta_didik->sekolah->kasek->nip : $get_siswa->peserta_didik->sekolah->kepala_sekolah?->nip }}
+            <td style="width: 50%; padding:5px;">
+
+                {{ $get_siswa->peserta_didik->sekolah->kasek
+                    ? $get_siswa->peserta_didik->sekolah->kasek->nama_lengkap
+                    : $get_siswa->peserta_didik->sekolah->kepala_sekolah?->nama_lengkap }}
+                <br />
+
+                NIP.
+                {{ $get_siswa->peserta_didik->sekolah->kasek
+                    ? $get_siswa->peserta_didik->sekolah->kasek->nip
+                    : $get_siswa->peserta_didik->sekolah->kepala_sekolah?->nip }}
             </td>
         </tr>
     </table>
