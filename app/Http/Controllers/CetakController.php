@@ -75,10 +75,6 @@ class CetakController extends Controller
 				]);
 			}])->find($request->route('anggota_rombel_id'));
 
-			$logo_sekolah = ($get_siswa->rombongan_belajar->sekolah && $get_siswa->rombongan_belajar->sekolah->logo_sekolah)
-			? public_path('./storage'.config('erapor.storage').'/images/'.$get_siswa->rombongan_belajar->sekolah->logo_sekolah)
-			: public_path('./images/tutwuri.png');
-
 			$nomor_induk = $get_siswa->peserta_didik->no_induk;
 			$tahun_ajaran_id = substr($nomor_induk, 0, 4);
 			$pas_foto = null;
@@ -90,6 +86,8 @@ class CetakController extends Controller
 					$pas_foto = Storage::disk('s3')->url($filename.'.JPG');
 				} else if (Storage::disk('s3')->exists($filename.'.jpg')) {
 					$pas_foto = Storage::disk('s3')->url($filename.'.jpg');
+				} else {
+					$pas_foto = "";
 				}
 			}
 
@@ -117,8 +115,6 @@ class CetakController extends Controller
 			$identitas_sekolah = view('cetak.identitas_sekolah', $params);
 			$identitas_peserta_didik = view('cetak.identitas_peserta_didik', $params);
 			$pdf->getMpdf()->WriteHTML($rapor_top);
-			$pdf->getMpdf()->SetWatermarkImage(asset($logo_sekolah), 0.2, array(80, 80));
-			$pdf->getMpdf()->showWatermarkImage = true;
 			$pdf->getMpdf()->WriteHTML($identitas_sekolah);
 			$pdf->getMpdf()->WriteHTML('<pagebreak />');
 			$pdf->getMpdf()->WriteHTML($identitas_peserta_didik);
