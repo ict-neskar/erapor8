@@ -92,8 +92,14 @@ const onFormSubmit = () => {
   });
 }
 const errors = ref({
+  jabatan: undefined,
+  semester_id: undefined,
+  zona: undefined,
   photo: undefined,
   bg_login: undefined,
+  ttd_kepsek: undefined,
+  ttd_lebar: undefined,
+  ttd_tinggi: undefined,
 })
 const submitForm = async () => {
   const dataForm = new FormData();
@@ -245,11 +251,11 @@ const resetSetting = async (data) => {
               </VCol>
               <VCol cols="12">
                 <AppTextField v-model="form.ttd_tinggi" label="Ukuran Tinggi Scan TTD Kepala Sekolah"
-                  placeholder="Ukuran Tinggi Scan TTD Kepala Sekolah" />
+                  placeholder="Ukuran Tinggi Scan TTD Kepala Sekolah" :error-messages="errors.ttd_tinggi" />
               </VCol>
               <VCol cols="12">
                 <AppTextField v-model="form.ttd_lebar" label="Ukuran Lebar Scan TTD Kepala Sekolah"
-                  placeholder="Ukuran Lebar Scan TTD Kepala Sekolah" />
+                  placeholder="Ukuran Lebar Scan TTD Kepala Sekolah" :error-messages="errors.ttd_lebar" />
               </VCol>
             </VCol>
           </VRow>
