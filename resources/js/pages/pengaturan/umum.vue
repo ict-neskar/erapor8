@@ -20,6 +20,9 @@ const form = ref({
   token_dapodik: null,
   photo: null,
   bg_login: null,
+  ttd_kepsek: null,
+  ttd_tinggi: null,
+  ttd_lebar: null,
 })
 onMounted(async () => {
   await fetchData();
@@ -35,6 +38,7 @@ const notif = ref({
   text: '',
 })
 const bgLogin = ref()
+const tddKepsek = ref()
 const fetchData = async () => {
   try {
     const response = await useApi(createUrl('/setting', {
@@ -48,6 +52,7 @@ const fetchData = async () => {
     data_guru.value = getData.data_guru
     data_rombel.value = getData.data_rombel
     bgLogin.value = getData.bg_login
+    tddKepsek.value = getData.ttd_kepsek
     form.value.semester_id = getData.semester_id;
     form.value.tanggal_rapor = getData.tanggal_rapor
     form.value.tanggal_rapor_kelas_akhir = getData.tanggal_rapor_kelas_akhir
@@ -57,6 +62,8 @@ const fetchData = async () => {
     form.value.rombel_4_tahun = getData.rombel_4_tahun
     form.value.url_dapodik = getData.url_dapodik
     form.value.token_dapodik = getData.token_dapodik
+    form.value.ttd_tinggi = getData.ttd_tinggi
+    form.value.ttd_lebar = getData.ttd_lebar
     if (getData.logo_sekolah) {
       logo_sekolah.value = getData.logo_sekolah
     }
@@ -92,6 +99,9 @@ const submitForm = async () => {
   const dataForm = new FormData();
   dataForm.append('photo', (form.value.photo) ? form.value.photo : '');
   dataForm.append('bg_login', (form.value.bg_login) ? form.value.bg_login : '');
+  dataForm.append('ttd_kepsek', (form.value.ttd_kepsek) ? form.value.ttd_kepsek : '');
+  dataForm.append('ttd_lebar', (form.value.ttd_lebar) ? form.value.ttd_lebar : '');
+  dataForm.append('ttd_tinggi', (form.value.ttd_tinggi) ? form.value.ttd_tinggi : '');
   dataForm.append('semester_id', form.value.semester_id);
   dataForm.append('sekolah_id', $user.sekolah_id);
   dataForm.append('semester_aktif', $semester.semester_id);
@@ -132,10 +142,12 @@ const dateConfig = ref({
   altFormat: "j F Y",
   altInput: true,
 });
-const resetBgLogin = async () => {
-  console.log('resetBgLogin');
-  await $api('/setting/reset-bg', {
+const resetSetting = async (data) => {
+  await $api('/setting/reset-setting', {
     method: 'POST',
+    body: {
+      data: data,
+    },
     onResponse() {
       fetchData()
     }
@@ -193,18 +205,6 @@ const resetBgLogin = async () => {
                   <AppTextField v-model="form.token_dapodik" label="Token Web Services Dapodik"
                     placeholder="Token Web Services Dapodik" />
                 </VCol>
-                <VCol cols="12">
-                  <label class="v-label text-body-2 text-high-emphasis" for="bg_login">Kustom Background (Laman Login
-                    &amp; Register)</label>
-                  <VFileInput id="bg_login" v-model="form.bg_login" :error-messages="errors.bg_login" accept="image/*"
-                    label="Unggah Kustom Background" v-if="bgLogin">
-                    <template v-slot:append>
-                      <VIcon icon="tabler-trash" color="error" size="26" @click="resetBgLogin" />
-                    </template>
-                  </VFileInput>
-                  <VFileInput id="bg_login" v-model="form.bg_login" :error-messages="errors.bg_login" accept="image/*"
-                    label="Unggah Kustom Background" v-else />
-                </VCol>
                 <VCol cols="12" class="d-flex gap-4">
                   <VBtn type="submit">
                     Simpan
@@ -213,9 +213,44 @@ const resetBgLogin = async () => {
               </VRow>
             </VCol>
             <VCol cols="5">
-              <VImg alt="Logo Sekolah" :src="logo_sekolah" cover class="w-100 mx-auto mb-10" />
-              <VFileInput v-model="form.photo" :error-messages="errors.photo" accept="image/*"
-                label="Unggah Logo Sekolah" />
+              <VRow>
+                <VCol cols="12">
+                  <VImg alt="Logo Sekolah" :src="logo_sekolah" cover class="w-100 mx-auto mb-10" />
+                  <VFileInput v-model="form.photo" :error-messages="errors.photo" accept="image/*"
+                    label="Unggah Logo Sekolah" />
+                </VCol>
+              </VRow>
+              <VCol cols="12">
+                <label class="v-label text-body-2 text-high-emphasis" for="bg_login">Kustom Background (Laman Login
+                  &amp; Register)</label>
+                <VFileInput id="bg_login" v-model="form.bg_login" :error-messages="errors.bg_login" accept="image/*"
+                  label="Unggah Kustom Background" v-if="bgLogin">
+                  <template v-slot:append>
+                    <VIcon icon="tabler-trash" color="error" size="26" @click="resetSetting('bg_login')" />
+                  </template>
+                </VFileInput>
+                <VFileInput id="bg_login" v-model="form.bg_login" :error-messages="errors.bg_login" accept="image/*"
+                  label="Unggah Kustom Background" v-else />
+              </VCol>
+              <VCol cols="12">
+                <label class="v-label text-body-2 text-high-emphasis" for="ttd_kepsek">Scan TTD Kepala Sekolah</label>
+                <VFileInput id="ttd_kepsek" v-model="form.ttd_kepsek" :error-messages="errors.ttd_kepsek"
+                  accept="image/*" label="Unggah Scan TTD Kepala Sekolah" v-if="tddKepsek">
+                  <template v-slot:append>
+                    <VIcon icon="tabler-trash" color="error" size="26" @click="resetSetting('ttd_kepsek')" />
+                  </template>
+                </VFileInput>
+                <VFileInput id="ttd_kepsek" v-model="form.ttd_kepsek" :error-messages="errors.ttd_kepsek"
+                  accept="image/*" label="Unggah Scan TTD Kepala Sekolah" v-else />
+              </VCol>
+              <VCol cols="12">
+                <AppTextField v-model="form.ttd_tinggi" label="Ukuran Tinggi Scan TTD Kepala Sekolah"
+                  placeholder="Ukuran Tinggi Scan TTD Kepala Sekolah" />
+              </VCol>
+              <VCol cols="12">
+                <AppTextField v-model="form.ttd_lebar" label="Ukuran Lebar Scan TTD Kepala Sekolah"
+                  placeholder="Ukuran Lebar Scan TTD Kepala Sekolah" />
+              </VCol>
             </VCol>
           </VRow>
         </VForm>
