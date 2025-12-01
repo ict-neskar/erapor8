@@ -78,6 +78,9 @@ class SettingController extends Controller
                 'token_dapodik' => get_setting('token_dapodik', request()->sekolah_id),
                 'logo_sekolah' => get_setting('logo_sekolah', request()->sekolah_id),
                 'bg_login' => get_setting('bg_login'),
+                'ttd_kepsek' => get_setting('ttd_kepsek', request()->sekolah_id, request()->semester_id),
+                'ttd_tinggi' => get_setting('ttd_tinggi', request()->sekolah_id, request()->semester_id),
+                'ttd_lebar' => get_setting('ttd_lebar', request()->sekolah_id, request()->semester_id),
                 'periode' => substr(request()->semester_id, -1),
                 'sekolah' => $sekolah,
             ];
@@ -95,6 +98,9 @@ class SettingController extends Controller
                 'zona' => 'required',
                 'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
                 'bg_login' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
+                'ttd_kepsek' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
+                'ttd_tinggi' => 'numeric',
+                'ttd_lebar' => 'numeric',
             ],
             [
                 'semester_id.required' => 'Periode Aktif tidak boleh kosong.',
@@ -106,6 +112,11 @@ class SettingController extends Controller
                 'bg_login.image' => 'Kustom Background harus berupa berkas gambar',
                 'bg_login.mimes' => 'Kustom Background harus berekstensi (jpg, jpeg, png)',
                 'bg_login.max' => 'Kustom Background maksimal 1 MB.',
+                'ttd_kepsek.image' => 'File TTD Kepala Sekolah harus berupa berkas gambar',
+                'ttd_kepsek.mimes' => 'File TTD Kepala harus berekstensi (jpg, jpeg, png)',
+                'ttd_kepsek.max' => 'File TTD Kepala maksimal 1 MB.',
+                'ttd_tinggi.numeric' => 'Ukuran Tinggi Scan TTD Kepala Sekolah.',
+                'ttd_lebar.numeric' => 'Ukuran Lebar Scan TTD Kepala Sekolah.',
             ]
         );
         Semester::where('periode_aktif', 1)->update(['periode_aktif' => 0]);
@@ -227,6 +238,55 @@ class SettingController extends Controller
                 ]
             );
         }
+        if($request->ttd_kepsek){
+            $ttd_kepsek = $request->ttd_kepsek->store('images');
+            Setting::updateOrCreate(
+                [
+                    'key' => 'ttd_kepsek',
+                    'sekolah_id' => request()->sekolah_id,
+                    'semester_id' => request()->semester_id,
+                ],
+                [
+                    'value' => '/storage/images/'.basename($ttd_kepsek),
+                ]
+            );
+        }
+        if($request->ttd_tinggi){
+            Setting::updateOrCreate(
+                [
+                    'key' => 'ttd_tinggi',
+                    'sekolah_id' => $request->sekolah_id,
+                    'semester_id' => request()->semester_id,
+                ],
+                [
+                    'value' => $request->ttd_tinggi,
+                ]
+            );
+        } else {
+            Setting::where(function($query){
+                $query->where('key', 'ttd_tinggi');
+                $query->where('semester_id', request()->semester_id);
+                $query->where('sekolah_id',  request()->sekolah_id);
+            })->delete();
+        }
+        if($request->ttd_lebar){
+            Setting::updateOrCreate(
+                [
+                    'key' => 'ttd_lebar',
+                    'sekolah_id' => $request->sekolah_id,
+                    'semester_id' => request()->semester_id,
+                ],
+                [
+                    'value' => $request->ttd_lebar,
+                ]
+            );
+        } else {
+            Setting::where(function($query){
+                $query->where('key', 'ttd_lebar');
+                $query->where('semester_id', request()->semester_id);
+                $query->where('sekolah_id',  request()->sekolah_id);
+            })->delete();
+        }
         if($request->photo){
             $sekolah = Sekolah::find($request->sekolah_id);
             $logo = $request->photo->store('images');
@@ -271,8 +331,8 @@ class SettingController extends Controller
         ];
         return response()->json($data);
     }
-    public function reset_bg(){
-        Setting::where('key', 'bg_login')->delete();
+    public function reset_setting(){
+        Setting::where('key', request()->data)->delete();
     }
     public function users(){
         $team = Team::where('name', request()->periode_aktif)->first();

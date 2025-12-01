@@ -368,10 +368,10 @@ const cekPass = (pass, defaultPassword) => {
                             <VCol cols="12">
                                 <VRow no-gutters>
                                     <VCol cols="12" md="3" class="d-flex align-items-center">
-                                        <label class="v-label text-body-2 text-high-emphasis" for="nis">NIS</label>
+                                        <label class="v-label text-body-2 text-high-emphasis" for="no_induk">NIS</label>
                                     </VCol>
                                     <VCol cols="12" md="9">
-                                        <AppTextField id="nis" :value="detilData?.nis" placeholder="NIS"
+                                        <AppTextField id="no_induk" :value="detilData?.no_induk" placeholder="NIS"
                                             persistent-placeholder disabled />
                                     </VCol>
                                 </VRow>

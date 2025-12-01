@@ -61,7 +61,7 @@ class User extends Authenticatable
 	{
         $last_login_at = NULL;
         if($this->access_token){
-            $last_login_at = Carbon::parse($this->access_token->last_used_at)->format('d/m/Y H:i:s');
+            $last_login_at = ($this->access_token->last_used_at) ? Carbon::parse($this->access_token->last_used_at)->format('d/m/Y H:i:s') : Carbon::parse($this->access_token->updated_at)->format('d/m/Y H:i:s');
         } elseif($this->attributes['last_login_at']){
             return Carbon::parse($this->attributes['last_login_at'])->format('d/m/Y H:i:s');
         }

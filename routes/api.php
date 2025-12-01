@@ -30,6 +30,7 @@ Route::group(['prefix' => 'auth'], function () {
         Route::post('user', [AuthController::class, 'user']);
     });
 });
+Route::post('/sinkronisasi/synchronizer', [SinkronisasiController::class, 'synchronizer'])->middleware('auth.apikey');
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::group(['prefix' => 'dashboard'], function () {
         Route::get('/', [DashboardController::class, 'index']);
@@ -60,7 +61,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('update-user', [SettingController::class, 'update_user']);
         Route::post('update-akses', [SettingController::class, 'update_akses']);
         Route::post('generate-pengguna', [SettingController::class, 'generate_pengguna']);
-        Route::post('reset-bg', [SettingController::class, 'reset_bg']);
+        Route::post('reset-setting', [SettingController::class, 'reset_setting']);
         Route::get('/unduhan', [SettingController::class, 'unduhan']);
         Route::get('/changelog', [SettingController::class, 'changelog']);
         Route::get('/github', [SettingController::class, 'github']);
