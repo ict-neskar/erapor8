@@ -187,16 +187,7 @@
             @else
                 <td style="width: 50%;padding:5px;" rowspan="5" align="center">
                     <div
-                        style="
-                            width:113px;
-                            height:151px;
-                            border:1px solid #000;
-                            display:flex;
-                            align-items:center;
-                            justify-content:center;
-                            font-size:12px;
-                            text-align:center;
-                    ">
+                        style="width:113px; height:151px; border:1px solid #000; display:flex; align-items:center; justify-content:center; font-size:12px; text-align:center;">
                         Pas Foto<br>3 x 4
                     </div>
                 </td>
