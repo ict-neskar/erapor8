@@ -5,6 +5,21 @@ use App\Models\Semester;
 use App\Models\Setting;
 use App\Models\Pembelajaran;
 use App\Models\Agama;
+use App\Models\MstWilayah;
+use App\Models\Ptk;
+use App\Models\MataPelajaran;
+use App\Models\Jurusan;
+use App\Models\RombonganBelajar;
+use App\Models\Kurikulum;
+use App\Models\PesertaDidik;
+use App\Models\AnggotaRombel;
+use App\Models\PdKeluar;
+use App\Models\Ekstrakurikuler;
+use App\Models\BimbingPd;
+use App\Models\AnggotaAktPd;
+use App\Models\AktPd;
+use App\Models\Mou;
+use App\Models\Dudi;
 use Carbon\Carbon;
 
 function get_setting($key, $sekolah_id = NULL, $semester_id = NULL){
@@ -418,4 +433,542 @@ function status_kenaikan($status){
         $status_teks = 'Tidak Lulus';
     }
     return $status_teks;
+}
+function update_wilayah($wilayah){
+    $data = MstWilayah::updateOrCreate(
+        [
+            'kode_wilayah' => $wilayah->kode_wilayah,
+        ],
+        [
+            'nama' => $wilayah->nama,
+            'id_level_wilayah' => $wilayah->id_level_wilayah,
+            'mst_kode_wilayah' => $wilayah->mst_kode_wilayah,
+            'negara_id' => $wilayah->negara_id,
+            'asal_wilayah' => $wilayah->asal_wilayah,
+            'kode_bps' => $wilayah->kode_bps,
+            'kode_dagri' => $wilayah->kode_dagri,
+            'kode_keu' => $wilayah->kode_keu,
+            'deleted_at' => $wilayah->expired_date,
+            'last_sync' => $wilayah->last_sync,
+        ]
+    );
+    return $data;
+}
+function proses_wilayah($wilayah, $recursive){
+    if(!$recursive){
+        update_wilayah($wilayah);
+    } else {
+        $kecamatan = NULL;
+        $kabupaten = NULL;
+        $provinsi = NULL;
+        if($wilayah->id_level_wilayah == 4){
+            if($wilayah->parrent_recursive){
+                if($wilayah->parrent_recursive->parrent_recursive){
+                    if($wilayah->parrent_recursive->parrent_recursive->parrent_recursive){
+                        $provinsi = update_wilayah($wilayah->parrent_recursive->parrent_recursive->parrent_recursive);
+                        $kabupaten = update_wilayah($wilayah->parrent_recursive->parrent_recursive);
+                        $kecamatan = update_wilayah($wilayah->parrent_recursive);
+                        $desa = update_wilayah($wilayah);
+                    }
+                }
+            }
+        } else {
+            $kecamatan = $wilayah->nama;
+            if($wilayah->parrent_recursive){
+                $kabupaten = $wilayah->parrent_recursive->nama;
+                if($wilayah->parrent_recursive->parrent_recursive){
+                    $provinsi = update_wilayah($wilayah->parrent_recursive->parrent_recursive);
+                    $kabupaten = update_wilayah($wilayah->parrent_recursive);
+                    $kecamatan = update_wilayah($wilayah);
+                }
+            }
+        }
+        return [
+            'kecamatan' => $kecamatan,
+            'kabupaten' => $kabupaten,
+            'provinsi' => $provinsi,
+        ];
+    }
+}
+function array_to_object($array) {
+   $obj = new stdClass();
+
+   foreach ($array as $k => $v) {
+      if (strlen($k)) {
+         if (is_array($v)) {
+            $obj->{$k} = array_to_object($v); //RECURSION
+         } else {
+            $obj->{$k} = $v;
+         }
+      }
+   }
+   
+   return $obj;
+}
+function simpan_ptk($data){
+    if($data){
+        $data = array_to_object($data);
+        proses_wilayah($data->wilayah, TRUE);
+        $random = Str::random(6);
+        $data->email = ($data->email) ? $data->email : strtolower($random).'@erapor-smk.net';
+        $data->email = strtolower($data->email);
+        $data->nuptk = ($data->nuptk) ? $data->nuptk : mt_rand();
+        $jenis_ptk_id = 0;
+        $create_guru = Ptk::withTrashed()->updateOrCreate(
+            [
+                'guru_id' => $data->ptk_id
+            ],
+            [
+                'guru_id_dapodik'       => $data->ptk_id,
+                'sekolah_id' 			=> request()->sekolah_id,
+                'nama' 					=> $data->nama,
+                'nuptk' 				=> $data->nuptk,
+                'nip' 					=> $data->nip,
+                'nik' 					=> $data->nik,
+                'jenis_kelamin' 		=> $data->jenis_kelamin,
+                'tempat_lahir' 			=> $data->tempat_lahir,
+                'tanggal_lahir' 		=> $data->tanggal_lahir,
+                'status_kepegawaian_id'	=> $data->status_kepegawaian_id,
+                'jenis_ptk_id' 			=> $data->ptk_terdaftar->jenis_ptk_id,
+                'jabatan_ptk_id' 		=> $data->tugas_tambahan?->jabatan_ptk_id,
+                'agama_id' 				=> $data->agama_id,
+                'alamat' 				=> $data->alamat_jalan,
+                'rt' 					=> $data->rt,
+                'rw' 					=> $data->rw,
+                'desa_kelurahan' 		=> $data->desa_kelurahan,
+                'kecamatan' 			=> $data->wilayah->nama,
+                'kode_wilayah'			=> $data->kode_wilayah,
+                'kode_pos'				=> ($data->kode_pos) ? $data->kode_pos : 0,
+                'no_hp'					=> ($data->no_hp) ? $data->no_hp : 0,
+                'email' 				=> $data->email,
+                'is_dapodik'			=> 1,
+                'last_sync'				=> Carbon::now()->subDays(30),
+            ]
+        );
+        if(isset($data->rwy_pend_formal)){
+            $gelar_ptk_id = [];
+            foreach($data->rwy_pend_formal as $rwy_pend_formal){
+                $gelar_ptk_id[] = $rwy_pend_formal->riwayat_pendidikan_formal_id;
+                $riwayat_pendidikan_formal_id = strtolower($rwy_pend_formal->riwayat_pendidikan_formal_id);
+                $ptk_id = $rwy_pend_formal->ptk_id;
+            }
+        }
+        return $create_guru;
+    }
+}
+function insert_jurusan($data){
+    $jurusan_induk = NULL;
+    if($data->jurusan_induk){
+        $jurusan_induk = Jurusan::find($data->jurusan_induk);
+    }
+    Jurusan::updateOrCreate(
+        [
+            'jurusan_id' => $data->jurusan_id
+        ],
+        [
+            'nama_jurusan' => $data->nama_jurusan,
+            'untuk_sma' => $data->untuk_sma,
+            'untuk_smk' => $data->untuk_smk,
+            'untuk_pt' => $data->untuk_pt,
+            'untuk_slb' => $data->untuk_slb,
+            'untuk_smklb' => $data->untuk_smklb,
+            'jenjang_pendidikan_id' => $data->jenjang_pendidikan_id,
+            'jurusan_induk' => ($jurusan_induk) ? $data->jurusan_induk : NULL,
+            'level_bidang_id' => $data->level_bidang_id,
+            'deleted_at' => $data->expired_date,
+            'last_sync' => Carbon::now()->subDays(30),
+        ]
+    );
+}
+function insert_kurikulum($data){
+    $jurusan = NULL;
+    if($data->jurusan_id){
+        $jurusan = Jurusan::find($data->jurusan_id);
+    }
+    Kurikulum::updateOrCreate(
+        [
+            'kurikulum_id' => $data->kurikulum_id
+        ],
+        [
+            'nama_kurikulum'			=> $data->nama_kurikulum,
+            'mulai_berlaku'				=> $data->mulai_berlaku,
+            'sistem_sks'				=> $data->sistem_sks,
+            'total_sks'					=> $data->total_sks,
+            'jenjang_pendidikan_id'		=> $data->jenjang_pendidikan_id,
+            'jurusan_id'				=> ($jurusan) ? $data->jurusan_id : NULL,
+            'deleted_at'				=> $data->expired_date,
+            'last_sync'					=> Carbon::now()->subDays(30),
+        ]
+    );
+}
+function insert_jurusan_sp($data){
+    $find = Jurusan::find($data->jurusan_id);
+    if($find){
+        JurusanSp::withTrashed()->updateOrCreate(
+            [
+                'jurusan_sp_id' => $data->jurusan_sp_id,
+            ],
+            [
+                'jurusan_sp_id_dapodik' => $data->jurusan_sp_id,
+                'sekolah_id' => request()->sekolah_id,
+                'jurusan_id' => $data->jurusan_id,
+                'nama_jurusan_sp' => $data->nama_jurusan_sp,
+                'last_sync' => Carbon::now()->subDays(30),
+            ]
+        );
+    }
+}
+function insert_rombel($data){
+    $jurusan = NULL;
+    $jurusan_sp = NULL;
+    if(isset($data->jurusan_sp)){
+        insert_jurusan_sp($data->jurusan_sp);
+        $jurusan = Jurusan::find($data->jurusan_sp->jurusan_id);
+        $jurusan_sp = JurusanSp::find($data->jurusan_sp_id);
+    }
+    if(isset($data->Soft_delete)){
+        $soft_delete = ($data->Soft_delete) ? now() : NULL;
+    } else {
+        $soft_delete = ($data->soft_delete) ? now() : NULL;
+    }
+    RombonganBelajar::withTrashed()->updateOrCreate(
+        [
+            'rombongan_belajar_id' => $data->rombongan_belajar_id,
+        ],
+        [
+            'sekolah_id' => request()->sekolah_id,
+            'semester_id' => $data->semester_id,
+            'jurusan_id' => ($jurusan) ? $data->jurusan_sp->jurusan_id : NULL,
+            'jurusan_sp_id' => ($jurusan_sp) ? $data->jurusan_sp_id : NULL,
+            'kurikulum_id' => $data->kurikulum_id,
+            'nama' => $data->nama,
+            'guru_id' => $data->ptk_id,
+            'ptk_id' => $data->ptk_id,
+            'tingkat' => $data->tingkat_pendidikan_id,
+            'jenis_rombel' => $data->jenis_rombel,
+            'rombel_id_dapodik' => $data->rombongan_belajar_id,
+            'deleted_at' => $soft_delete,
+            'last_sync' => Carbon::now()->subDays(30),
+        ]
+    );
+}
+function simpan_rombel($data){
+    $data = array_to_object($data);
+    if($data->jurusan_sp){
+        insert_jurusan($data->jurusan_sp->jurusan);
+    }
+    insert_kurikulum($data->kurikulum);
+    insert_rombel($data);
+}
+function simpan_mapel($data){
+    MataPelajaran::updateOrCreate(
+        [
+            'mata_pelajaran_id' => $data->mata_pelajaran_id,
+        ],
+        [
+            'jurusan_id' 				=> $data->jurusan_id,
+            'nama'						=> $data->nama,
+            'pilihan_sekolah'			=> $data->pilihan_sekolah,
+            'pilihan_kepengawasan'		=> $data->pilihan_kepengawasan,
+            'pilihan_buku'				=> $data->pilihan_buku,
+            'pilihan_evaluasi'			=> $data->pilihan_evaluasi,
+            'deleted_at'				=> $data->expired_date,
+            'last_sync'					=> Carbon::now()->subDays(30),
+        ]
+    );
+}
+function insert_mata_pelajaran($data){
+    if($data && $data->jurusan_id){
+        $jurusan = Jurusan::find($data->jurusan_id);
+        if($jurusan){
+            simpan_mapel($data);
+        }
+    } else {
+        simpan_mapel($data);
+    }
+}
+function simpan_pembelajaran($data){
+    $data = array_to_object($data);
+    $find = RombonganBelajar::find($data->rombongan_belajar_id);
+    simpan_ptk($data->ptk_terdaftar);
+    insert_mata_pelajaran($data->mata_pelajaran);
+    if($find){
+        Pembelajaran::withTrashed()->updateOrCreate(
+            [
+                'pembelajaran_id' => $data->pembelajaran_id
+            ],
+            [
+                'pembelajaran_id_dapodik' => $data->pembelajaran_id,
+                'induk_pembelajaran_id' => $data->induk_pembelajaran_id,
+                'semester_id' => $data->semester_id,
+                'sekolah_id'				=> request()->sekolah_id,
+                'rombongan_belajar_id'		=> $data->rombongan_belajar_id,
+                'guru_id'					=> $data->ptk_terdaftar->ptk_id,
+                'mata_pelajaran_id'			=> $data->mata_pelajaran_id,
+                'nama_mata_pelajaran'		=> $data->nama_mata_pelajaran,
+                'kkm'						=> 0,
+                'is_dapodik'				=> 1,
+                'deleted_at'                => NULL,
+                'last_sync'					=> Carbon::now()->subDays(30),
+            ]
+        );
+        foreach($data->sub_mapel as $sup){
+            simpan_pembelajaran($sup);
+        }    
+    }
+}
+function simpan_anggota_rombel($data, $deleted_at){
+    AnggotaRombel::withTrashed()->updateOrCreate(
+        [
+            'anggota_rombel_id' => $data->anggota_rombel_id,
+        ],
+        [
+            'sekolah_id' => request()->sekolah_id,
+            'semester_id' => request()->semester_id,
+            'rombongan_belajar_id' => $data->rombongan_belajar_id,
+            'peserta_didik_id' => $data->peserta_didik_id,
+            'anggota_rombel_id_dapodik' => $data->anggota_rombel_id,
+            'deleted_at' => $deleted_at,
+            'last_sync' => Carbon::now()->subDays(30),
+        ]
+    );
+}
+function simpan_pd_keluar($data){
+    simpan_pd($data, now());
+    PdKeluar::updateOrCreate(
+        [
+            'peserta_didik_id' => $data->peserta_didik_id,
+        ],
+        [
+            'sekolah_id' => request()->sekolah_id,
+            'semester_id' => request()->semester_id,
+            'last_sync' => Carbon::now()->subDays(30),
+        ]
+    );
+}
+function simpan_pd_aktif($data){
+    $data = array_to_object($data);
+    simpan_pd($data, NULL);
+}
+function simpan_pd($data, $deleted_at){
+    $wilayah = NULL;
+    if(isset($data->wilayah)){
+        $wilayah = proses_wilayah($data->wilayah, TRUE);
+    }
+    $kecamatan = NULL;
+    if($wilayah){
+        try {
+            $kecamatan = ($wilayah['kecamatan']) ? $wilayah['kecamatan']->nama : 0;
+        } catch (\Throwable $e) {
+            //$e
+        }
+    }
+    PesertaDidik::withTrashed()->updateOrCreate(
+        [
+            'peserta_didik_id' => $data->peserta_didik_id
+        ],
+        [
+            'peserta_didik_id_dapodik' => $data->peserta_didik_id,
+            'sekolah_id'		=> request()->sekolah_id,
+            'nama' 				=> $data->nama,
+            'no_induk' 			=> ($data->registrasi_peserta_didik->nipd) ? $data->registrasi_peserta_didik->nipd : 0,
+            'nisn' 				=> $data->nisn,
+            'nik'               => $data->nik,
+            'jenis_kelamin' 	=> ($data->jenis_kelamin) ?? 0,
+            'tempat_lahir' 		=> ($data->tempat_lahir) ?? 0,
+            'tanggal_lahir' 	=> $data->tanggal_lahir,
+            'agama_id' 			=> ($data->agama_id) ?? 0,
+            'status' 			=> 'Anak Kandung',
+            'anak_ke' 			=> ($data->anak_keberapa) ?? 0,
+            'alamat' 			=> ($data->alamat_jalan) ?? 0,
+            'rt' 				=> ($data->rt) ?? 0,
+            'rw' 				=> ($data->rw) ?? 0,
+            'desa_kelurahan' 	=> ($data->desa_kelurahan) ?? 0,
+            'kecamatan' 		=> $kecamatan,
+            'kode_pos' 			=> ($data->kode_pos) ?? 0,
+            'no_telp' 			=> ($data->nomor_telepon_rumah) ?? 0,
+            'no_hp' 			=> ($data->nomor_telepon_seluler) ?? 0,
+            'sekolah_asal' 		=> ($data->registrasi_peserta_didik) ? $data->registrasi_peserta_didik->sekolah_asal : 0,
+            'diterima' 			=> ($data->registrasi_peserta_didik) ? $data->registrasi_peserta_didik->tanggal_masuk_sekolah : NULL,
+            'diterima_kelas'    => ($data->diterima_dikelas) ? ($data->diterima_dikelas->rombongan_belajar) ? $data->diterima_dikelas->rombongan_belajar->nama : NULL : NULL,
+            'kode_wilayah' 		=> $data->kode_wilayah,
+            'email' 			=> $data->email,
+            'nama_ayah' 		=> ($data->nama_ayah) ?? 0,
+            'nama_ibu' 			=> ($data->nama_ibu_kandung) ?? 0,
+            'kerja_ayah' 		=> ($data->pekerjaan_id_ayah) ? $data->pekerjaan_id_ayah : 1,
+            'kerja_ibu' 		=> ($data->pekerjaan_id_ibu) ? $data->pekerjaan_id_ibu : 1,
+            'nama_wali' 		=> ($data->nama_wali) ?? 0,
+            'alamat_wali' 		=> ($data->alamat_jalan) ?? 0,
+            'telp_wali' 		=> ($data->nomor_telepon_seluler) ?? 0,
+            'kerja_wali' 		=> ($data->pekerjaan_id_wali) ? $data->pekerjaan_id_wali : 1,
+            'deleted_at'        => NULL,
+            'active' 			=> 1,
+            'last_sync' => Carbon::now()->subDays(30),
+        ]
+    );
+    if(isset($data->anggota_rombel)){
+        $find = RombonganBelajar::find($data->anggota_rombel->rombongan_belajar_id);
+        if($find){
+            simpan_anggota_rombel($data->anggota_rombel, $deleted_at);
+        }
+    }
+}
+function simpan_ekskul($data){
+    $data = array_to_object($data);
+    insert_rombel($data->rombongan_belajar);
+    $find = Ptk::find($data->rombongan_belajar->ptk_id);
+    if($find){
+        Ekstrakurikuler::withTrashed()->updateOrCreate(
+            [
+                'ekstrakurikuler_id' => $data->id_kelas_ekskul,
+            ],
+            [
+                'id_kelas_ekskul' => $data->id_kelas_ekskul,
+                'semester_id' => request()->semester_id,
+                'sekolah_id'	=> request()->sekolah_id,
+                'guru_id' => $data->rombongan_belajar->ptk_id,
+                'nama_ekskul' => $data->nm_ekskul,
+                'is_dapodik' => 1,
+                'rombongan_belajar_id'	=> $data->rombongan_belajar_id,
+                'alamat_ekskul' => $data->rombongan_belajar->ruang->nm_ruang, 
+                'last_sync'	=> Carbon::now()->subDays(30),
+            ]
+        );
+    }
+}
+function simpan_anggota_ekskul($data){
+    $data = array_to_object($data);
+    simpan_pd($data->pd, NULL);
+    simpan_anggota_rombel($data, NULL);
+}
+function simpan_dudi($data){
+    $data = array_to_object($data);
+    $dudi = Dudi::withTrashed()->updateOrCreate(
+        [
+            'dudi_id' => $data->dudi_id
+        ],
+        [
+            'dudi_id_dapodik' => $data->dudi_id,
+            'sekolah_id'		=> request()->sekolah_id,
+            'nama'				=> $data->nama,
+            'bidang_usaha_id'	=> $data->bidang_usaha_id,
+            'nama_bidang_usaha'	=> '-',
+            'alamat_jalan'		=> $data->alamat_jalan,
+            'rt'				=> $data->rt,
+            'rw'				=> $data->rw,
+            'nama_dusun'		=> $data->nama_dusun,
+            'desa_kelurahan'	=> $data->desa_kelurahan,
+            'kode_wilayah'		=> $data->kode_wilayah,
+            'kode_pos'			=> $data->kode_pos,
+            'lintang'			=> $data->lintang,
+            'bujur'				=> $data->bujur,
+            'nomor_telepon'		=> $data->nomor_telepon,
+            'nomor_fax'			=> $data->nomor_fax,
+            'email'				=> $data->email,
+            'website'			=> $data->website,
+            'npwp'				=> $data->npwp,
+            'last_sync' => Carbon::now()->subDays(30),
+        ]
+    );
+    foreach($data->mou as $mou){
+        $dudi->nama_bidang_usaha = $mou->nama_bidang_usaha;
+        $dudi->save();
+        Mou::withTrashed()->updateOrCreate(
+            [
+                'mou_id' => $mou->mou_id
+            ],
+            [
+                'mou_id_dapodik' => $mou->mou_id,
+                'id_jns_ks'			=> $mou->id_jns_ks,
+                'dudi_id'			=> $mou->dudi_id,
+                'dudi_id_dapodik'	=> $mou->dudi_id,
+                'sekolah_id'		=> request()->sekolah_id,
+                'nomor_mou'			=> $mou->nomor_mou,
+                'judul_mou'			=> $mou->judul_mou,
+                'tanggal_mulai'		=> $mou->tanggal_mulai,
+                'tanggal_selesai'	=> ($mou->tanggal_selesai) ? $mou->tanggal_selesai : date('Y-m-d'),
+                'nama_dudi'			=> $mou->nama_dudi,
+                'npwp_dudi'			=> $mou->npwp_dudi,
+                'nama_bidang_usaha'	=> $mou->nama_bidang_usaha,
+                'telp_kantor'		=> $mou->telp_kantor,
+                'fax'				=> $mou->fax,
+                'contact_person'	=> $mou->contact_person,
+                'telp_cp'			=> $mou->telp_cp,
+                'jabatan_cp'		=> $mou->jabatan_cp,
+                'last_sync' => Carbon::now()->subDays(30),
+            ]
+        );
+        foreach($mou->akt_pd as $akt_pd){
+            AktPd::withTrashed()->updateOrCreate(
+                [
+                    'akt_pd_id' => $akt_pd->id_akt_pd
+                ],
+                [
+                    'akt_pd_id_dapodik' => $akt_pd->id_akt_pd,
+                    'sekolah_id'	=> request()->sekolah_id,
+                    'mou_id'		=> $mou->mou_id,
+                    'id_jns_akt_pd'	=> $akt_pd->id_jns_akt_pd,
+                    'judul_akt_pd'	=> $akt_pd->judul_akt_pd,
+                    'sk_tugas'		=> ($akt_pd->sk_tugas) ? $akt_pd->sk_tugas : '-',
+                    'tgl_sk_tugas'	=> $akt_pd->tgl_sk_tugas,
+                    'ket_akt'		=> $akt_pd->ket_akt,
+                    'a_komunal'		=> $akt_pd->a_komunal,
+                    'last_sync'		=> Carbon::now()->subDays(30),
+                ]
+            );
+            if($akt_pd->anggota_akt_pd){
+                foreach($akt_pd->anggota_akt_pd as $anggota_akt_pd){
+                    if($anggota_akt_pd->registrasi_peserta_didik){
+                        $find = PesertaDidik::find($anggota_akt_pd->registrasi_peserta_didik->peserta_didik_id);
+                        if($find){
+                            $create_anggota_akt_pd = AnggotaAktPd::withTrashed()->updateOrCreate(
+                                [
+                                    'anggota_akt_pd_id' => $anggota_akt_pd->id_ang_akt_pd,
+                                ],
+                                [
+                                    'id_ang_akt_pd' => $anggota_akt_pd->id_ang_akt_pd,
+                                    'sekolah_id'		=> request()->sekolah_id,
+                                    'akt_pd_id'			=> $akt_pd->id_akt_pd,
+                                    'peserta_didik_id'	=> $anggota_akt_pd->registrasi_peserta_didik->peserta_didik_id,
+                                    'nm_pd'				=> $anggota_akt_pd->nm_pd,
+                                    'nipd'				=> $anggota_akt_pd->nipd,
+                                    'jns_peran_pd'		=> $anggota_akt_pd->jns_peran_pd,
+                                    'last_sync' => Carbon::now()->subDays(30),
+                                ]
+                            );
+                        }
+                    }
+                }
+            }
+            if($akt_pd->bimbing_pd){
+                foreach($akt_pd->bimbing_pd as $bimbing_pd){
+                    $find = Ptk::withTrashed()->find($bimbing_pd->ptk_id);
+                    if($find){
+                        $create_bimbing_pd = BimbingPd::withTrashed()->updateOrCreate(
+                            [
+                                'bimbing_pd_id' => $bimbing_pd->id_bimb_pd
+                            ],
+                            [
+                                'id_bimb_pd' => $bimbing_pd->id_bimb_pd,
+                                'sekolah_id'		=> request()->sekolah_id,
+                                'akt_pd_id'			=> $akt_pd->id_akt_pd,
+                                'guru_id'			=> $bimbing_pd->ptk_id,
+                                'ptk_id'			=> $bimbing_pd->ptk_id,
+                                'urutan_pembimbing'	=> $bimbing_pd->urutan_pembimbing,
+                                'last_sync' => Carbon::now()->subDays(30),
+                            ]
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+function simpan_anggota_matpil($data){
+    $data = array_to_object($data);
+    $pd = PesertaDidik::find($data->peserta_didik_id);
+    $rombel = RombonganBelajar::find($data->rombongan_belajar_id);
+    if($pd && $rombel){
+        simpan_anggota_rombel($data, NULL);
+    }
 }

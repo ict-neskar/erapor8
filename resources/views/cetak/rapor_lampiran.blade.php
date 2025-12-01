@@ -281,9 +281,9 @@
             <td style="width:60%;">
                 <p>Mengetahui,<br>{{ $jabatan }}</p>
                 <br>
-                <br>
-                <br>
-                <br>
+                <img src="{{ get_setting('ttd_kepsek', $get_siswa->sekolah_id, $get_siswa->semester_id) . '?date=' . time() }}"
+                    height="{{ get_setting('ttd_tinggi', $get_siswa->sekolah_id, $get_siswa->semester_id) . ' px' }}"
+                    width="{{ get_setting('ttd_lebar', $get_siswa->sekolah_id, $get_siswa->semester_id) . 'px' }}">
                 <br>
                 <p class="nama_ttd">
                     <strong><u>

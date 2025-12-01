@@ -39,6 +39,14 @@ class Sekolah extends Model
 		return $this->hasMany(NilaiAkhir::class, 'sekolah_id', 'sekolah_id');
 	}
 	public function cp(){
+		return $this->hasManyThrough(
+            CapaianPembelajaran::class,
+            Pembelajaran::class,
+            'sekolah_id',
+            'mata_pelajaran_id',
+            'sekolah_id',
+            'mata_pelajaran_id'
+        );
 		return $this->hasMany(DeskripsiMataPelajaran::class, 'sekolah_id', 'sekolah_id');
 	}
 	public function nilai_projek(){

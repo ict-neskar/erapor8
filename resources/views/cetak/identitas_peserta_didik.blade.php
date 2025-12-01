@@ -198,14 +198,27 @@
             </td>
         </tr>
         <tr>
-            <td style="width: 50%;padding:5px;">&nbsp;</td>
+            <td style="width: 50%;padding:5px;">
+                @if (get_setting('ttd_kepsek', $get_siswa->sekolah_id, $get_siswa->semester_id))
+                    <div>
+                        <img src="{{ get_setting('ttd_kepsek', $get_siswa->sekolah_id, $get_siswa->semester_id) . '?date=' . time() }}"
+                            height="{{ get_setting('ttd_tinggi', $get_siswa->sekolah_id, $get_siswa->semester_id) . ' px' }}"
+                            width="{{ get_setting('ttd_lebar', $get_siswa->sekolah_id, $get_siswa->semester_id) . 'px' }}">
+                    </div>
+                @else
+                    &nbsp;
+                @endif
+
+            </td>
         </tr>
-        <tr>
-            <td style="width: 50%;padding:5px;">&nbsp;</td>
-        </tr>
-        <tr>
-            <td style="width: 50%;padding:5px;">&nbsp;</td>
-        </tr>
+        @if (!get_setting('ttd_kepsek', $get_siswa->sekolah_id, $get_siswa->semester_id))
+            <tr>
+                <td style="width: 50%;padding:5px;">&nbsp;</td>
+            </tr>
+            <tr>
+                <td style="width: 50%;padding:5px;">&nbsp;</td>
+            </tr>
+        @endif
         <tr>
             <td style="width: 50%;padding:5px;">
                 {{ $get_siswa->peserta_didik->sekolah->kasek ? $get_siswa->peserta_didik->sekolah->kasek->nama_lengkap : $get_siswa->peserta_didik->sekolah->kepala_sekolah?->nama_lengkap }}<br />NIP.

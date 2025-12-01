@@ -984,8 +984,8 @@ class ReferensiController extends Controller
                         }
                     }
                 }
-                $delete = TpMapel::whereNotIn('pembelajaran_id', $pembelajaran_id)->where('tp_id', request()->tp_id)->delete();
-                $insert = $insert + $delete;
+                //$delete = TpMapel::whereNotIn('pembelajaran_id', $pembelajaran_id)->where('tp_id', request()->tp_id)->delete();
+                //$insert = $insert + $delete;
             } else {
                 $insert = TpMapel::whereHas('pembelajaran', function($query) use ($mata_pelajaran_id){
                     $query->where(function($query) use ($mata_pelajaran_id){

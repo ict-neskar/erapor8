@@ -109,7 +109,6 @@ const emitModelValue = val => {
 }
 
 watch(() => props, () => {
-  console.log(props);
   fieldProps.value = filterFieldProps(props)
   inputProps.value = VInput.filterProps(props)
 }, {
