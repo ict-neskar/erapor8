@@ -727,7 +727,7 @@ class SettingController extends Controller
         Artisan::call('backup:restore', $options);
     }
     public function hapus_file(){
-        if(Storage::disk('local')->delete($this->folder.'/'.request()->zip_file)){
+        if(Storage::disk('local')->delete(request()->zip_file)){
             $data = [
                 'color' => 'success',
                 'title' => 'Berhasil!',
