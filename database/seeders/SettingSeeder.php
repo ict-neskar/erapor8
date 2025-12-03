@@ -14,8 +14,8 @@ class SettingSeeder extends Seeder
     public function run()
     {
         $all_data = array(
-			array('key' => 'app_version', 'value' => '6.0.0'),
-			array('key' => 'db_version', 'value' => '5.0.0'),
+			array('key' => 'app_version', 'value' => '8.0.1'),
+			array('key' => 'db_version', 'value' => '6.0.6'),
 		);
 		DB::table('settings')->truncate();
 		foreach($all_data as $data){

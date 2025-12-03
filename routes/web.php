@@ -11,8 +11,8 @@ Route::group(['prefix' => 'downloads'], function () {
     Route::get('/template-nilai-akhir/{pembelajaran_id?}', [DownloadController::class, 'template_nilai_akhir'])->name('template-nilai-akhir');
     Route::get('/leger-nilai-kurmer/{rombongan_belajar_id}/{sekolah_id}/{semester_id}', [DownloadController::class, 'unduh_leger_nilai_kurmer'])->name('unduh-leger-nilai-kurmer');
     Route::get('/pengguna/{data}/{sekolah_id}/{semester_id}', [DownloadController::class, 'pengguna'])->name('unduh-pengguna');
-    Route::get('/backup/{filename}', function ($filename) {
-        return Storage::disk('local')->download(config('app.name').'/'.$filename);
+    Route::get('/backup/{folder}/{filename}', function ($folder, $filename) {
+        return Storage::disk('local')->download($folder.'/'.$filename);
     });
 });
 Route::group(['prefix' => 'cetak'], function () {

@@ -31,9 +31,10 @@ const fetchData = async () => {
       data.value = getData.data
     } else {
       githubData.value = getData?.data
-      if (getData.headers.length) {
-        isPrev.value = !getData.headers?.Link[0]?.includes('first')
-        isNext.value = !getData.headers?.Link[0]?.includes('last')
+      const Link = getData.headers.Link
+      if (Link.length) {
+        isPrev.value = !Link[0]?.includes('first') || !Link[0]?.includes('prev')
+        isNext.value = !Link[0]?.includes('last')
       }
     }
   } catch (error) {

@@ -8,6 +8,7 @@ use App\Models\Agama;
 use App\Models\MstWilayah;
 use App\Models\Ptk;
 use App\Models\MataPelajaran;
+use App\Models\JurusanSp;
 use App\Models\Jurusan;
 use App\Models\RombonganBelajar;
 use App\Models\Kurikulum;

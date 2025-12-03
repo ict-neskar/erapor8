@@ -28,21 +28,33 @@ use File;
 
 class SettingController extends Controller
 {
+    public function __construct(){
+        $this->folder = strtolower(str_replace(' ', '-', config('app.name')));
+    }
     public function index(){
         if(request()->data == 'backup'){
-            //$files = Storage::disk('local')->files(config('app.name'));
-            if(!Storage::disk('local')->exists(config('app.name'))){
-                Storage::disk('local')->makeDirectory(config('app.name'), 0777, true, true);
+            if(!Storage::disk('local')->exists($this->folder)){
+                Storage::disk('local')->makeDirectory($this->folder, 0777, true, true);
             }
-            $files = File::allFiles(storage_path('app/private/'.config('app.name')));
-            $data = [];
+            $files = File::allFiles(storage_path('app/private/'.$this->folder));
+            $array = [];
             foreach($files as $file){
-                $data[] = [
-                    'fileName' => $file->getFilename(),
+                $array[] = [
+                    'fileName' => $this->folder.'/'.$file->getFilename(),
                     'fileSize' => $this->bytesToMB($file->getSize()),
                     'fileDate' => date('Y-m-d H:i:s', $file->getMTime()),
                 ];
             }
+            $data = [
+                'files' => $array,
+                'path' => base_path(),
+                'folder' => $this->folder,
+                'db' => [
+                    'driver' => config('database.default'),
+                    'host' => config('database.connections.'.config('database.default').'.host'),
+                    'username' => config('database.connections.'.config('database.default').'.username'),
+                ]
+            ];
         } else {
             $sekolah = Sekolah::with(['kepala_sekolah' => function($query){
                 $query->where('semester_id', request()->semester_id);
@@ -673,7 +685,7 @@ class SettingController extends Controller
     }
     public function proses_backup(){
         Storage::deleteDirectory('app/backup-temp');
-        $exitCode = Artisan::call('backup:run --only-db');
+        $exitCode = Artisan::call('backup:run --only-db --disable-notifications');
         $output = Artisan::output();
         $array = Str::of($output)->explode("\r\n")->all();
         $filteredArray = collect($array)->reject(function ($value) {
@@ -705,7 +717,7 @@ class SettingController extends Controller
                 'zip_file.mimes' => 'Berkas Database harus berekstensi .ZIP',
             ]
         );
-        $file = request()->zip_file->store(config('app.name'), 'local');
+        $file = request()->zip_file->store($this->folder, 'local');
     }
     public function proses_restore($file){
         $options = [
@@ -715,7 +727,7 @@ class SettingController extends Controller
         Artisan::call('backup:restore', $options);
     }
     public function hapus_file(){
-        if(Storage::disk('local')->delete(config('app.name').'/'.request()->zip_file)){
+        if(Storage::disk('local')->delete($this->folder.'/'.request()->zip_file)){
             $data = [
                 'color' => 'success',
                 'title' => 'Berhasil!',

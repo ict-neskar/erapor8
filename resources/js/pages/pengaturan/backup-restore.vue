@@ -12,6 +12,9 @@ onMounted(async () => {
 const loadingBody = ref(true)
 const btnLoading = ref(false)
 const listBackup = ref([])
+const basePath = ref()
+const folder = ref()
+const db = ref({})
 const data = ref()
 const fetchData = async () => {
   try {
@@ -21,7 +24,10 @@ const fetchData = async () => {
       },
     }))
     let getData = response.data.value
-    listBackup.value = getData
+    listBackup.value = getData.files
+    basePath.value = getData.path
+    folder.value = getData.folder
+    db.value = getData.db
   } catch (error) {
     console.error(error);
   } finally {
@@ -183,12 +189,12 @@ const confirmClose = async () => {
             <li>Buka cmd/ssh</li>
             <li>Jalankan:
               <ul style="margin: 0 15px 0px;">
-                <li><code>cd C:\eRaporSMK\dataweb</code>[Enter]</li>
+                <li><code>cd {{ basePath }}</code>[Enter]</li>
                 <li><code>php artisan app:restore</code>[Enter]</li>
                 <li>Jika ada notifikasi
-                  <code>Proceed to restore "e-Rapor SMK/<code>nama-file-database</code>.zip" using the "pgsql" database
-                  connection. (Database: <code>nama-database</code>, Host: 127.0.0.1, username:
-                  <code>nama-user-database</code>): (yes/no) [<span class="text-warning">yes</span>]</code>, tekan
+                  <code>Proceed to restore "{{ folder }}/nama-file-database.zip" using the "{{ db.driver }}" database
+                  connection. (Database: nama-database, Host: {{ db.host }}, username:
+                  {{ db.username }}): (yes/no) [<span class="text-warning">yes</span>]</code>, tekan
                   tombol Enter
                 </li>
                 <li>Tunggu sampai proses restore database selesai.</li>
