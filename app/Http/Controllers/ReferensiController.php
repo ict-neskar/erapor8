@@ -391,39 +391,48 @@ class ReferensiController extends Controller
             }
         }
         if(request()->data == 'cp_kd'){
-            $pembelajaran = Pembelajaran::where(function($query){
+            /*$pembelajaran = Pembelajaran::where(function($query){
                 $query->where('guru_id', request()->guru_id);
                 $query->where('mata_pelajaran_id', request()->mata_pelajaran_id);
                 $query->where('rombongan_belajar_id', request()->rombongan_belajar_id);
                 $query->where('sekolah_id', request()->sekolah_id);
                 $query->where('semester_id', request()->semester_id);
+                $query->whereHas('rombongan_belajar', function($query){
+                    $query->where('rombongan_belajar_id', request()->rombongan_belajar_id);
+                });
                 $query->orWhere('guru_pengajar_id', request()->guru_id);
                 $query->where('sekolah_id', request()->sekolah_id);
                 $query->where('semester_id', request()->semester_id);
                 $query->where('mata_pelajaran_id', request()->mata_pelajaran_id);
                 $query->where('rombongan_belajar_id', request()->rombongan_belajar_id);
-            })->first();
+                $query->whereHas('rombongan_belajar', function($query){
+                    $query->where('rombongan_belajar_id', request()->rombongan_belajar_id);
+                });
+            })->first();*/
+            $pembelajaran = Pembelajaran::find(request()->pembelajaran_id);
             $fase = (request()->tingkat == 10) ? 'E' : 'F';
             $data_cp = [];
             $data_kd = [];
             if(request()->merdeka){
-                $data_cp = CapaianPembelajaran::where(function($query) use ($fase){
-                    $query->where('mata_pelajaran_id', request()->mata_pelajaran_id);
+                $data_cp = CapaianPembelajaran::where(function($query) use ($fase, $pembelajaran){
+                    $query->where('mata_pelajaran_id', $pembelajaran->mata_pelajaran_id);
                     $query->where('fase', $fase);
                     $query->where('aktif', 1);
                 })->orderBy('cp_id')->get();
             } else {
-                $data_kd = KompetensiDasar::where(function($query){
-                    $query->where('mata_pelajaran_id', request()->mata_pelajaran_id);
+                $data_kd = KompetensiDasar::where(function($query) use ($pembelajaran){
+                    $query->where('mata_pelajaran_id', $pembelajaran->mata_pelajaran_id);
                     $query->where('kelas_'.request()->tingkat, 1);
-                    $query->where('kompetensi_id', request()->kompetensi_id);
+                    $query->whereIn('kompetensi_id', [1, 2]);
                     $query->where('aktif', 1);
                 })->orderBy('id_kompetensi')->get();
             }
             $data = [
-                'pembelajaran_id' => ($pembelajaran) ? $pembelajaran->pembelajaran_id : request()->pembelajaran_id,
+                'mata_pelajaran_id' => ($pembelajaran) ? $pembelajaran->mata_pelajaran_id : request()->mata_pelajaran_id,
+                'pembelajaran_id' => request()->pembelajaran_id,
                 'cp' => $data_cp,
                 'kd' => $data_kd,
+                'pembelajaran' => $pembelajaran,
             ];
         }
         if(request()->data == 'jurusan'){
@@ -1019,20 +1028,20 @@ class ReferensiController extends Controller
                     'tingkat' => 'required',
                     'rombongan_belajar_id' => 'required',
                     'mata_pelajaran_id' => 'required',
-                    'cp_id' => 'required',
+                    //'cp_id' => 'required',
                     'template_excel' => 'required|mimes:xlsx',
                 ],
                 [
                     'tingkat.required' => 'Tingkat Kelas tidak boleh kosong!!',
                     'rombongan_belajar_id.required' => 'Rombongan Belajar tidak boleh kosong!!',
                     'mata_pelajaran_id.required' => 'Mata Pelajaran tidak boleh kosong!!',
-                    'cp_id.required' => 'CP tidak boleh kosong!!',
+                    //'cp_id.required' => 'CP tidak boleh kosong!!',
                     'template_excel.required' => 'Template TP tidak boleh kosong!!',
                     'template_excel.mimes' => 'Template TP harus berupa file dengan ekstensi: xlsx.',
                 ]
             );
             $file_path = request()->template_excel->store('files', 'public');
-            $id = (request()->cp_id) ?? request()->kd_id;
+            $id = (request()->cp_id) ?? request()->kompetensi_dasar_id;
             Excel::import(new TemplateTp(request()->pembelajaran_id, request()->mata_pelajaran_id, $id), storage_path('/app/public/'.$file_path));
             Storage::disk('public')->delete($file_path);
             $data = [
