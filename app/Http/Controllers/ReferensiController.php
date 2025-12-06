@@ -200,14 +200,14 @@ class ReferensiController extends Controller
                 $query->whereNotNull('kelompok_id');
                 $query->whereNotNull('no_urut');
                 //$query->whereNull('induk_pembelajaran_id');
-                if(request()->add_kd){
+                if(request()->add_kd && !request()->rombongan_belajar_id){
                     $query->whereHas('rombongan_belajar', function($query){
                         $query->whereHas('kurikulum', function($query){
                             $query->where('nama_kurikulum', 'ILIKE', '%REV%');
                         });
                     });
                 }
-                if(request()->add_cp){
+                if(request()->add_cp && !request()->rombongan_belajar_id){
                     $query->whereHas('rombongan_belajar', function($query){
                         $query->whereHas('kurikulum', function($query){
                             $query->where('nama_kurikulum', 'ILIKE', '%Merdeka%');
@@ -219,21 +219,23 @@ class ReferensiController extends Controller
                 $query->orWhere('guru_pengajar_id', request()->guru_id);
                 $query->whereNotNull('kelompok_id');
                 $query->whereNotNull('no_urut');
-                //$query->whereNull('induk_pembelajaran_id');
-                if(request()->add_kd){
+                if(request()->add_kd && !request()->rombongan_belajar_id){
                     $query->whereHas('rombongan_belajar', function($query){
                         $query->whereHas('kurikulum', function($query){
                             $query->where('nama_kurikulum', 'ILIKE', '%REV%');
                         });
                     });
-                } 
-                if(request()->add_cp){
+                }
+                if(request()->add_cp && !request()->rombongan_belajar_id){
                     $query->whereHas('rombongan_belajar', function($query){
                         $query->whereHas('kurikulum', function($query){
                             $query->where('nama_kurikulum', 'ILIKE', '%Merdeka%');
                         });
                     });
                 }
+                $query->where('sekolah_id', request()->sekolah_id);
+                $query->where('semester_id', request()->semester_id);
+                //$query->whereNull('induk_pembelajaran_id');
             }
         };
     }
@@ -378,9 +380,18 @@ class ReferensiController extends Controller
                 if(request()->add_kd || request()->add_cp){
                     $data = [
                         'rombel' => $rombel,
-                        'mapel' => Pembelajaran::where($this->kondisiPembelajaran())->orderBy('nama_mata_pelajaran')->get(),
+                        'mapel' => Pembelajaran::where(function($query){
+                            $query->where('guru_id', request()->guru_id);
+                            $query->where('sekolah_id', request()->sekolah_id);
+                            $query->where('semester_id', request()->semester_id);
+                            $query->where('rombongan_belajar_id', request()->rombongan_belajar_id);
+                            $query->orWhere('guru_pengajar_id', request()->guru_id);
+                            $query->where('sekolah_id', request()->sekolah_id);
+                            $query->where('semester_id', request()->semester_id);
+                            $query->where('rombongan_belajar_id', request()->rombongan_belajar_id);
+                        })->orderBy('nama_mata_pelajaran')->get(),
                         'merdeka' => $merdeka,
-                    ];
+                    ];  
                 } else {
                     $data = [
                         'rombel' => $rombel,
@@ -712,19 +723,43 @@ class ReferensiController extends Controller
                 ];
             }
         } else {
-            $kd = KompetensiDasar::find(request()->kompetensi_dasar_id);
-            $kd->kompetensi_dasar_alias = request()->kompetensi_dasar_alias;
+            $kd = new KompetensiDasar;
+            if(request()->kompetensi_dasar_id){
+                $text = [
+                    'success' => 'Deskripsi Kompetensi Dasar berhasil diperbaharui',
+                    'error' => 'Deskripsi Kompetensi Dasar gagal diperbaharui',
+                ];
+                $kd = $kd->find(request()->kompetensi_dasar_id);
+                $kd->kompetensi_dasar_alias = request()->kompetensi_dasar_alias;
+            } else {
+                $text = [
+                    'success' => 'Deskripsi Kompetensi Dasar berhasil disimpan',
+                    'error' => 'Deskripsi Kompetensi Dasar gagal disimpan. ',
+                ];
+                $kd->kompetensi_dasar_id = Str::uuid();
+                $kd->id_kompetensi = request()->id_kompetensi;
+                $kd->kompetensi_id = request()->kompetensi_id;
+                $kd->mata_pelajaran_id = request()->mata_pelajaran_id;
+                $kd->kelas_10 = request()->tingkat == 10 ? 1 : 0;
+                $kd->kelas_11 = request()->tingkat == 11 ? 1 : 0;
+                $kd->kelas_12 = request()->tingkat == 12 ? 1 : 0;
+                $kd->kelas_13 = request()->tingkat == 13 ? 1 : 0;
+                $kd->kompetensi_dasar = request()->kompetensi_dasar;
+                $kd->user_id = request()->user_id;
+                $kd->kurikulum = 2017;
+                $kd->last_sync = now();
+            }
             if($kd->save()){
                 $data = [
                     'color' => 'success',
                     'title' => 'Berhasil!',
-                    'text' => 'Deskripsi Kompetensi Dasar berhasil diperbaharui',
+                    'text' => $text['success'],
                 ];
             } else {
                 $data = [
                     'color' => 'error',
                     'title' => 'Gagal!',
-                    'text' => 'Deskripsi Kompetensi Dasar gagal diperbaharui. Silahkan coba beberapa saat lagi!',
+                    'text' => $text['error'].'Silahkan coba beberapa saat lagi!',
                 ];
             }
         }
