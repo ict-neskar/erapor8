@@ -44,4 +44,5 @@ COPY --chmod=755 ./entrypoint.d/ /etc/entrypoint.d
 # Install composer dependencies
 RUN cp .env.example .env \
     && composer install --no-dev --optimize-autoloader \
-    && rm -rf .env bootstrap/cache/*.php
+    && rm -rf .env bootstrap/cache/*.php \
+    && php artisan storage:link
