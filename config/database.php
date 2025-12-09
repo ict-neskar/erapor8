@@ -89,7 +89,7 @@ return [
             'port' => env('DB_PORT', '5432'),
             'database' => (Str::contains(php_uname('s'), 'Windows')) ? 'erapor_smk' : env('DB_DATABASE', 'forge'),
             'username' => (Str::contains(php_uname('s'), 'Windows')) ? 'postgres' : env('DB_USERNAME', 'forge'),
-            'password' => (Str::contains(php_uname('s'), 'Windows')) ? '' : env('DB_PASSWORD', ''),
+            'password' => (env('DB_PASSWORD') == 'windows') ? '' : env('DB_PASSWORD', ''),
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
