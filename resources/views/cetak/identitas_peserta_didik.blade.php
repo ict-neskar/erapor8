@@ -193,9 +193,9 @@
             <td style="width: 50%;padding:5px;">
                 @if (get_setting('ttd_kepsek', $pd->sekolah_id, $pd->kelas->semester_id))
                     <div>
-                        <img src="{{ get_setting('ttd_kepsek', $pd->sekolah_id, $pd->semester_id) }}"
-                            height="{{ get_setting('ttd_tinggi', $pd->sekolah_id, $pd->semester_id) . 'px' }}"
-                            width="{{ get_setting('ttd_lebar', $pd->sekolah_id, $pd->semester_id) . 'px' }}"
+                        <img src="{{ get_setting('ttd_kepsek', $pd->sekolah_id, $pd->kelas->semester_id) }}"
+                            height="{{ get_setting('ttd_tinggi', $pd->sekolah_id, $pd->kelas->semester_id) . 'px' }}"
+                            width="{{ get_setting('ttd_lebar', $pd->sekolah_id, $pd->kelas->semester_id) . 'px' }}"
                             class="ttd_kepsek">
                     </div>
                 @else
@@ -214,8 +214,8 @@
         @endif
         <tr>
             <td style="width: 50%;padding:5px;">
-                {{ $pd->sekolah->kasek ? $pd->sekolah->kasek->nama_lengkap : $pd->sekolah->kepala_sekolah?->nama_lengkap }}<br />NIP.
-                {{ $pd->sekolah->kasek ? $pd->sekolah->kasek->nip : $pd->sekolah->kepala_sekolah?->nip }}
+                {{ $pd->kelas->sekolah->kasek ? $pd->sekolah->kasek->nama_lengkap : $pd->kelas->sekolah->kepala_sekolah?->nama_lengkap }}<br />NIP.
+                {{ $pd->kelas->sekolah->kasek ? $pd->kelas->sekolah->kasek->nip : $pd->kelas->sekolah->kepala_sekolah?->nip }}
             </td>
         </tr>
     </table>
