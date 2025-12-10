@@ -179,9 +179,9 @@
     </table>
     <table width="100%" style="margin-top:50px;">
         <tr>
-            @if ($get_pas_foto != null)
+            @if ($pas_foto != null)
                 <td style="width: 50%;padding:5px;" rowspan="5" align="center">
-                    <img src="{{ $get_pas_foto }}"
+                    <img src="{{ $pas_foto }}"
                         style="width:113px; height:151px;  object-fit: cover; object-position: center;">
                 </td>
             @else
