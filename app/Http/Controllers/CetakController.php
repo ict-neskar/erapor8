@@ -79,9 +79,9 @@ class CetakController extends Controller
 		])->find(request()->route('peserta_didik_id'));
 
 		
-		// $logo_sekolah = ($pd->rombongan_belajar->sekolah && $pd->rombongan_belajar->sekolah->logo_sekolah)
-		// ? Storage::disk('s3')->url('neskar_logo.png')
-		// : public_path('./images/tutwuri.png');
+		$logo_sekolah = ($pd->kelas->sekolah && $pd->kelas->sekolah->logo_sekolah)
+		? Storage::disk('s3')->url('neskar_logo.png')
+		: public_path('./images/tutwuri.png');
 
 		$nomor_induk = $pd->no_induk;
 		$tahun_ajaran_id = substr($nomor_induk, 0, 4);
@@ -89,11 +89,13 @@ class CetakController extends Controller
 
 		if (Storage::disk('s3')->exists($tahun_ajaran_id)) {
 			$base_path = $tahun_ajaran_id;
-			$filename = $tahun_ajaran_id.'/'.$nomor_induk;
-			if (Storage::disk('s3')->exists($filename.'.JPG')) {
-				$pas_foto = Storage::disk('s3')->url($filename.'.JPG');
-			} else if (Storage::disk('s3')->exists($filename.'.jpg')) {
-				$pas_foto = Storage::disk('s3')->url($filename.'.jpg');
+			$filename = trim($tahun_ajaran_id.'/'.$nomor_induk);	
+			$upper = $filename.'.JPG';
+			$lower = $filename.'.jpg';
+			if (Storage::disk('s3')->exists($upper)) {
+				$pas_foto = Storage::disk('s3')->url($upper);
+			} else if (Storage::disk('s3')->exists($lower)) {
+				$pas_foto = Storage::disk('s3')->url($lower);
 			} else {
 				$pas_foto = null;
 			}
@@ -103,7 +105,7 @@ class CetakController extends Controller
 		$params = [
 			'pd' => $pd,
 			'pas_foto'	=> $pas_foto,
-			// 'get_logo_sekolah'	=> $logo_sekolah,
+			'get_logo_sekolah'	=> $logo_sekolah,
 		];
 
 		$pdf = PDF::loadView('cetak.blank', $params, [], [
@@ -124,8 +126,8 @@ class CetakController extends Controller
 		$identitas_peserta_didik = view('cetak.identitas_peserta_didik', $params);
 		$pdf->getMpdf()->WriteHTML($rapor_top);
 		$pdf->getMpdf()->WriteHTML($identitas_sekolah);
-		// $pdf->getMpdf()->SetWatermarkImage($logo_sekolah, 0.2, array(80, 80));
-		// $pdf->getMpdf()->showWatermarkImage = true;
+		$pdf->getMpdf()->SetWatermarkImage($logo_sekolah, 0.2, array(80, 80));
+		$pdf->getMpdf()->showWatermarkImage = true;
 		$pdf->getMpdf()->WriteHTML('<pagebreak />');
 		$pdf->getMpdf()->WriteHTML($identitas_peserta_didik);
 		return $pdf->stream($general_title.'-IDENTITAS.pdf');
