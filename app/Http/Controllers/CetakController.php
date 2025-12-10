@@ -143,7 +143,7 @@ class CetakController extends Controller
 				} else if (Storage::disk('s3')->exists($filename.'.jpg')) {
 					$pas_foto = Storage::disk('s3')->url($filename.'.jpg');
 				} else {
-					$pas_foto = "";
+					$pas_foto = null;
 				}
 			}
 
