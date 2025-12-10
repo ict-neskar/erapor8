@@ -79,11 +79,11 @@ class CetakController extends Controller
 		])->find(request()->route('peserta_didik_id'));
 
 		
-		$logo_sekolah = ($pd->rombongan_belajar->sekolah && $pd->rombongan_belajar->sekolah->logo_sekolah)
-		? Storage::disk('s3')->url('neskar_logo.png')
-		: public_path('./images/tutwuri.png');
+		// $logo_sekolah = ($pd->rombongan_belajar->sekolah && $pd->rombongan_belajar->sekolah->logo_sekolah)
+		// ? Storage::disk('s3')->url('neskar_logo.png')
+		// : public_path('./images/tutwuri.png');
 
-		$nomor_induk = $get_siswa->peserta_didik->no_induk;
+		$nomor_induk = $pd->no_induk;
 		$tahun_ajaran_id = substr($nomor_induk, 0, 4);
 		$pas_foto = null;
 
@@ -103,7 +103,7 @@ class CetakController extends Controller
 		$params = [
 			'pd' => $pd,
 			'pas_foto'	=> $pas_foto,
-			'get_logo_sekolah'	=> $logo_sekolah,
+			// 'get_logo_sekolah'	=> $logo_sekolah,
 		];
 
 		$pdf = PDF::loadView('cetak.blank', $params, [], [
@@ -124,8 +124,8 @@ class CetakController extends Controller
 		$identitas_peserta_didik = view('cetak.identitas_peserta_didik', $params);
 		$pdf->getMpdf()->WriteHTML($rapor_top);
 		$pdf->getMpdf()->WriteHTML($identitas_sekolah);
-		$pdf->getMpdf()->SetWatermarkImage($logo_sekolah, 0.2, array(80, 80));
-		$pdf->getMpdf()->showWatermarkImage = true;
+		// $pdf->getMpdf()->SetWatermarkImage($logo_sekolah, 0.2, array(80, 80));
+		// $pdf->getMpdf()->showWatermarkImage = true;
 		$pdf->getMpdf()->WriteHTML('<pagebreak />');
 		$pdf->getMpdf()->WriteHTML($identitas_peserta_didik);
 		return $pdf->stream($general_title.'-IDENTITAS.pdf');
