@@ -146,9 +146,7 @@ class CetakController extends Controller
 					$pas_foto = null;
 				}
 			}
-
-			$params['pas_foto'] = $pas_foto;
-			
+			// $params['pas_foto'] = $pas_foto;
 			$params = array(
 				'get_siswa'	=> $get_siswa,
 				'get_pas_foto'	=> $pas_foto,
