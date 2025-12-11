@@ -245,7 +245,7 @@ class DashboardController extends Controller
       };
     }
     private function dashboard_guru(){
-        $data_rombel = RombonganBelajar::withWhereHas('pembelajaran', $this->kondisi())->with(['wali_kelas' => function($query){
+        $data_rombel = RombonganBelajar::withCount('anggota_rombel')->withWhereHas('pembelajaran', $this->kondisi())->with(['wali_kelas' => function($query){
          $query->select('guru_id', 'nama', 'gelar_depan', 'gelar_belakang');
       }])->orderBy('tingkat')->get();
       $result = [];
@@ -282,7 +282,7 @@ class DashboardController extends Controller
         return response()->json($data);
     }
     public function wali(){
-      $rombel = RombonganBelajar::where(function($query){
+      $rombel = RombonganBelajar::withCount('anggota_rombel')->where(function($query){
          $query->where('jenis_rombel', 1);
          $query->where('guru_id', request()->guru_id);
          $query->where('semester_id', request()->semester_id);
@@ -310,7 +310,6 @@ class DashboardController extends Controller
                $query->select('guru_id', 'nama', 'gelar_depan', 'gelar_belakang');
             },
          ])->withCount([
-            'anggota_rombel',
             'pd_pkl',
             'pd_pkl as pd_pkl_dinilai' => function($query){
                $query->has('nilai_pkl');
@@ -327,7 +326,7 @@ class DashboardController extends Controller
                'rombongan_belajar_id' => $item->rombongan_belajar_id,
                'nama_mata_pelajaran' => $item->nama_mata_pelajaran,
                'guru' => ($item->pengajar) ? $item->pengajar->nama_lengkap : $item->guru->nama_lengkap,
-               'pd' => $item->anggota_rombel_count,
+               'pd' => $rombel->anggota_rombel_count,
                'pd_dinilai' => $this->anggota_dinilai($item->pembelajaran_id, $item->rombongan_belajar_id),
                'kkm' => $item->kkm,
                'kelompok_id' => $item->kelompok_id,
