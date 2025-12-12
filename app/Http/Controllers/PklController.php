@@ -223,14 +223,14 @@ class PklController extends Controller
             }
         } elseif(request()->aksi == 'absen'){
             $text = 'Absensi PKL';
-            foreach(request()->sakit as $peserta_didik_id => $sakit){
+            foreach(request()->peserta_didik_id as $peserta_didik_id){
                 AbsensiPkl::updateOrCreate(
                     [
                         'peserta_didik_id' => $peserta_didik_id,
                         'pkl_id' => request()->pkl_id,
                     ],
                     [
-                        'sakit' => $sakit,
+                        'sakit' => request()->sakit[$peserta_didik_id],
                         'izin' => request()->izin[$peserta_didik_id],
                         'alpa' => request()->alpa[$peserta_didik_id],
                     ]
