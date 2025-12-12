@@ -140,6 +140,9 @@ class PklController extends Controller
                 $query->where('guru_id', request()->guru_id);
                 $query->where('mata_pelajaran_id', 800001000);
                 $query->where('semester_id', request()->semester_id);
+                $query->orWhere('guru_pengajar_id', request()->guru_id);
+                $query->where('mata_pelajaran_id', 800001000);
+                $query->where('semester_id', request()->semester_id);
             });
         })->orderBy('nama')->get();
         return $data;

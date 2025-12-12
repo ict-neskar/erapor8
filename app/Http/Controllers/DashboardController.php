@@ -13,6 +13,7 @@ use App\Models\AnggotaRombel;
 use App\Models\DeskripsiMataPelajaran;
 use App\Models\Absensi;
 use App\Models\NilaiAkhir;
+use App\Models\PesertaDidik;
 
 class DashboardController extends Controller
 {
@@ -631,7 +632,7 @@ class DashboardController extends Controller
             ];
          }
          foreach($nilai_sub as $pd_id => $akhir){
-            $anggota = Anggota_rombel::with(['nilai_akhir_mapel' => function($query){
+            $anggota = AnggotaRombel::with(['nilai_akhir_mapel' => function($query){
                $query->where('pembelajaran_id', request()->pembelajaran_id);
             }])->where('peserta_didik_id', $pd_id)->where('rombongan_belajar_id', request()->rombongan_belajar_id)->first();
             if($anggota){
