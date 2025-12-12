@@ -468,6 +468,10 @@ class DashboardController extends Controller
             $query->with(['pd' => function($query){
                $query->orderBy('nama');
                $query->with([
+                  'nilai_akhir' => function($query){
+                     $query->where('pembelajaran_id', request()->pembelajaran_id);
+                     $query->where('kompetensi_id', 99);
+                  },
                   'nilai_akhir_induk' => function($query){
                      $query->where('pembelajaran_id', request()->pembelajaran_id);
                   },
@@ -560,16 +564,15 @@ class DashboardController extends Controller
          foreach($pembelajaran->rombongan_belajar->pd as $pd){
             $nilai_akhir = [];
             $deskripsi = [];
-            $nilai_akhir_induk[$pd->peserta_didik_id] = 0;
-            if($pd->nilai_akhir_induk){
-               if(!$pd->nilai_akhir_induk->where('kompetensi_id', 99)->first()){
-                  $pd->nilai_akhir_induk->kompetensi_id = 99;
-                  $pd->nilai_akhir_induk->nilai = $pd->nilai_akhir_induk->nilai;
-                  $pd->nilai_akhir_induk->save();
-                  $nilai_akhir_induk[$pd->peserta_didik_id] = ($pd->nilai_akhir_induk) ? $pd->nilai_akhir_induk->nilai : 0;
-               } else {
-                  $nilai_akhir_induk[$pd->peserta_didik_id] = $pd->nilai_akhir_induk->where('kompetensi_id', 99)->first()?->nilai;
+            if($pd->nilai_akhir){
+               $nilai_akhir_induk[$pd->peserta_didik_id] = $pd->nilai_akhir->nilai;
+            } else {
+               if(!$pd->nilai_akhir->where('kompetensi_id', 99)->first()){
+                  $pd->nilai_akhir->kompetensi_id = 99;
+                  $pd->nilai_akhir->nilai = $pd->nilai_akhir_induk->nilai;
+                  $pd->nilai_akhir->save();
                }
+               $nilai_akhir_induk[$pd->peserta_didik_id] = $pd->nilai_akhir->where('kompetensi_id', 99)->first()?->nilai;
             }
             $deskripsi_pengetahuan_induk[$pd->peserta_didik_id] = NULL;
             $deskripsi_keterampilan_induk[$pd->peserta_didik_id] = NULL;
