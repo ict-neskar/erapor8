@@ -271,7 +271,7 @@
                 <p>Mengetahui,<br>{{ $jabatan }}</p>
                 <br>
                 @if (get_setting('ttd_kepsek', $pd->sekolah_id, $pd->kelas->semester_id))
-                    <img src="{{ get_setting('ttd_kepsek', $pd->sekolah_id, $pd->kelas->semester_id) }}"
+                    <img src="{{ public_path('.' . get_setting('ttd_kepsek', $pd->sekolah_id, $pd->kelas->semester_id)) }}"
                         height="{{ get_setting('ttd_tinggi', $pd->sekolah_id, $pd->kelas->semester_id) . 'px' }}"
                         width="{{ get_setting('ttd_lebar', $pd->sekolah_id, $pd->kelas->semester_id) . 'px' }}"
                         class="ttd_kepsek">
