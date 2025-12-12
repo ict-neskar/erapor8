@@ -28,16 +28,18 @@ const fetchData = async () => {
       },
       onResponse({ request, response, options }) {
         let getData = response._data
-        status_penilaian.value = getData.app.status_penilaian
-        rekap.value = getData.rekap
-        sekolah.value = getData.sekolah
-        app.value = getData.app
-        helpdesk.value = getData.helpdesk
-        text_wa.value = getData.text_wa
+        if(getData && getData.app){
+          status_penilaian.value = getData.app.status_penilaian
+          rekap.value = getData.rekap
+          sekolah.value = getData.sekolah
+          app.value = getData.app
+          helpdesk.value = getData.helpdesk
+          text_wa.value = getData.text_wa
+        }
       },
     })
   } catch (error) {
-    console.error(error);
+    console.error('fetchData', error);
   } finally {
     loadingBody.value = false;
   }
