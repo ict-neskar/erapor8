@@ -217,10 +217,12 @@ class WalasController extends Controller
             ],
         );
         $dudi = Dudi::find(request()->dudi_id);
+        $anggota_id = [];
         foreach(request()->lokasi_prakerin as $anggota_rombel_id => $lokasi_prakerin){
             if(isset(request()->lama_prakerin[$anggota_rombel_id]) && isset(request()->lama_prakerin[$anggota_rombel_id]) && isset(request()->keterangan_prakerin[$anggota_rombel_id])){
+                $anggota_id[] = $anggota_rombel_id;
                 $insert++;
-                Prakerin::UpdateOrCreate(
+                Prakerin::updateOrCreate(
                     [
                         'anggota_rombel_id' => $anggota_rombel_id,
                         'sekolah_id' => request()->sekolah_id,
@@ -236,6 +238,11 @@ class WalasController extends Controller
                 );
             }
         }
+        Prakerin::where(function($query) use ($dudi, $anggota_id){
+            $query->where('sekolah_id', request()->sekolah_id);
+            $query->where('mitra_prakerin', $dudi->nama);
+            $query->whereNotIn('anggota_rombel_id', $anggota_id);
+        })->delete();
         if($insert){
             $data = [
                 'color' => 'success',
@@ -270,7 +277,7 @@ class WalasController extends Controller
         $insert = 0;
         foreach(request()->sakit as $anggota_rombel_id => $sakit){
             $insert++;
-            Absensi::UpdateOrCreate(
+            Absensi::updateOrCreate(
 				[
                     'anggota_rombel_id' => $anggota_rombel_id
                 ],
