@@ -605,7 +605,7 @@ class DashboardController extends Controller
                   'deskripsi_mapel' => function($query) use ($sub){
                      $query->where('pembelajaran_id', $sub->pembelajaran_id);
                   },
-            ])->orderBy('nama')->get();
+            ])->orderByRaw('LOWER(nama) ASC')->get();
             foreach($data_pd as $pd){
                $nilai_akhir = [];
                $deskripsi = [];

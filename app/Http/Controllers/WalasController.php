@@ -56,7 +56,7 @@ class WalasController extends Controller
                     $query->whereNotNull('budaya_kerja_id');
                 }
             ]);
-        })->orderBy('nama')->get() : NULL;
+        })->orderByRaw('LOWER(nama) ASC')->get() : NULL;
         $data = [
             'rombel' => $rombel,
             'merdeka' => ($rombel) ? merdeka($rombel->kurikulum->nama_kurikulum) : FALSE,
@@ -193,7 +193,7 @@ class WalasController extends Controller
                 });
             });
         };
-        $data_siswa = PesertaDidik::withWhereHas('anggota_akt_pd', $callback_anggota_akt_pd)->withWhereHas('anggota_rombel', $callback_anggota_rombel)->orderBy('nama')->get();
+        $data_siswa = PesertaDidik::withWhereHas('anggota_akt_pd', $callback_anggota_akt_pd)->withWhereHas('anggota_rombel', $callback_anggota_rombel)->orderByRaw('LOWER(nama) ASC')->get();
         $data = [
             'dudi' => $dudi,
             'data_siswa' => $data_siswa,
@@ -267,7 +267,7 @@ class WalasController extends Controller
                 $query->where('guru_id', request()->guru_id);
             });
             $query->with(['absensi']);
-        })->orderBy('nama')->get();
+        })->orderByRaw('LOWER(nama) ASC')->get();
         $data = [
             'data_siswa' => $data_siswa,
         ];
@@ -331,7 +331,7 @@ class WalasController extends Controller
                     'single_nilai_ekstrakurikuler'
                 ]);
             });
-        })->orderBy('nama')->get();
+        })->orderByRaw('LOWER(nama) ASC')->get();
         $data = [
             'data_siswa' => $data_siswa,
         ];
@@ -391,7 +391,7 @@ class WalasController extends Controller
                 $query->where('guru_id', request()->guru_id);
             });
             $query->with(['single_kenaikan_kelas']);
-        })->orderBy('nama')->get();
+        })->orderByRaw('LOWER(nama) ASC')->get();
         $data = [
             'data_siswa' => $data_siswa,
             'options' => $options,
@@ -442,7 +442,7 @@ class WalasController extends Controller
                 $query->where('sekolah_id', request()->sekolah_id);
                 $query->where('guru_id', request()->guru_id);
             });
-        })->orderBy('nama')->get();
+        })->orderByRaw('LOWER(nama) ASC')->get();
         $data = [
             'merdeka' => ($rombel) ? merdeka($rombel->kurikulum->nama_kurikulum) : FALSE,
             'data_siswa' => $data_siswa,
@@ -472,7 +472,7 @@ class WalasController extends Controller
                 //$query->where('jenis_rombel', 16);
                 $query->where('jurusan_id', $rombel->jurusan_id);
             });
-        }])->orderBy('nama')->get();
+        }])->orderByRaw('LOWER(nama) ASC')->get();
         $pembelajaran = Pembelajaran::withWhereHas('rombongan_belajar', function($query){
             $query->where('semester_id', request()->semester_id);
             $query->where('sekolah_id', request()->sekolah_id);
@@ -506,7 +506,7 @@ class WalasController extends Controller
         $data_siswa = ($rombel) ? PesertaDidik::withWhereHas('anggota_rombel', function($query) use ($rombel){
             $query->where('rombongan_belajar_id', $rombel->rombongan_belajar_id);
             $query->with('kokurikuler');
-        })->orderBy('nama')->get() : NULL;
+        })->orderByRaw('LOWER(nama) ASC')->get() : NULL;
         $data = [
             'rombel' => $rombel,
             'merdeka' => ($rombel) ? merdeka($rombel->kurikulum->nama_kurikulum) : FALSE,
@@ -520,7 +520,7 @@ class WalasController extends Controller
         $data_siswa = ($rombel) ? PesertaDidik::withWhereHas('anggota_rombel', function($query) use ($rombel){
             $query->where('rombongan_belajar_id', $rombel->rombongan_belajar_id);
             $query->with('catatan_walas');
-        })->orderBy('nama')->get() : NULL;
+        })->orderByRaw('LOWER(nama) ASC')->get() : NULL;
         $data = [
             'rombel' => $rombel,
             'merdeka' => ($rombel) ? merdeka($rombel->kurikulum->nama_kurikulum) : FALSE,

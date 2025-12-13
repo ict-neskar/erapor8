@@ -380,7 +380,7 @@ class PklController extends Controller
                 'absensi_pkl' => function($query){
                     $query->where('pkl_id', request()->pkl_id);
                 }
-            ])->orderBy('nama')->get(),
+            ])->orderByRaw('LOWER(nama) ASC')->get(),
             'tp' => TujuanPembelajaran::withWhereHas('tp_pkl', function($query){
                 $query->where('pkl_id', request()->pkl_id);
             })->orderBy('deskripsi')->get(),
@@ -409,7 +409,7 @@ class PklController extends Controller
                 $query->where('jenis_rombel', 1);
                 $query->where('rombongan_belajar.semester_id', request()->semester_id);
             },
-        ])->orderBy('nama')->get();
+        ])->orderByRaw('LOWER(nama) ASC')->get();
         return $data;
     }
 }
