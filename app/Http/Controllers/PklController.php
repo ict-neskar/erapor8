@@ -223,14 +223,14 @@ class PklController extends Controller
             }
         } elseif(request()->aksi == 'absen'){
             $text = 'Absensi PKL';
-            foreach(request()->sakit as $peserta_didik_id => $sakit){
+            foreach(request()->peserta_didik_id as $peserta_didik_id){
                 AbsensiPkl::updateOrCreate(
                     [
                         'peserta_didik_id' => $peserta_didik_id,
                         'pkl_id' => request()->pkl_id,
                     ],
                     [
-                        'sakit' => $sakit,
+                        'sakit' => request()->sakit[$peserta_didik_id],
                         'izin' => request()->izin[$peserta_didik_id],
                         'alpa' => request()->alpa[$peserta_didik_id],
                     ]
@@ -380,7 +380,7 @@ class PklController extends Controller
                 'absensi_pkl' => function($query){
                     $query->where('pkl_id', request()->pkl_id);
                 }
-            ])->orderBy('nama')->get(),
+            ])->orderByRaw('LOWER(nama) ASC')->get(),
             'tp' => TujuanPembelajaran::withWhereHas('tp_pkl', function($query){
                 $query->where('pkl_id', request()->pkl_id);
             })->orderBy('deskripsi')->get(),
@@ -409,7 +409,7 @@ class PklController extends Controller
                 $query->where('jenis_rombel', 1);
                 $query->where('rombongan_belajar.semester_id', request()->semester_id);
             },
-        ])->orderBy('nama')->get();
+        ])->orderByRaw('LOWER(nama) ASC')->get();
         return $data;
     }
 }

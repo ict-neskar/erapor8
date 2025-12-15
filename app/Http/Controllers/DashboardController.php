@@ -577,15 +577,27 @@ class DashboardController extends Controller
             $deskripsi_pengetahuan_induk[$pd->peserta_didik_id] = NULL;
             $deskripsi_keterampilan_induk[$pd->peserta_didik_id] = NULL;
             if($pd->deskripsi_mapel){
-               $first = $pd->deskripsi_mapel->where('asal', 1)->first();
+               $first = $pd->deskripsi_mapel->where(function($query) use ($pd, $pembelajaran){
+                  $query->whereHas('anggota_rombel', function($query) use ($pd){
+                     $query->where('peserta_didik_id', $pd->peserta_didik_id);
+                  });
+                  $query->where('asal', 1);
+                  $query->where('pembelajaran_id', $pembelajaran->pembelajaran_id);
+               })->first();
                if(!$first){
-                  $pd->deskripsi_mapel->asal = 1;
-                  $pd->deskripsi_mapel->save();
+                  $anggota = AnggotaRombel::where(function($query) use ($pd, $pembelajaran){
+                     $query->where('peserta_didik_id', $pd->peserta_didik_id);
+                     $query->where('rombongan_belajar_id', $pembelajaran->rombongan_belajar_id);
+                  })->first();
+                  $this->save_desk(1, $anggota, [
+                     'pengetahuan' => $pd->deskripsi_mapel->deskripsi_pengetahuan,
+                     'keterampilan' => $pd->deskripsi_mapel->deskripsi_keterampilan,
+                  ]);
                   $deskripsi_pengetahuan_induk[$pd->peserta_didik_id] = $pd->deskripsi_mapel->deskripsi_pengetahuan;
                   $deskripsi_keterampilan_induk[$pd->peserta_didik_id] = $pd->deskripsi_mapel->deskripsi_keterampilan;
                } else {
-                  $deskripsi_pengetahuan_induk[$pd->peserta_didik_id] = $pd->deskripsi_mapel->where('asal', 1)->first()?->deskripsi_pengetahuan;
-                  $deskripsi_keterampilan_induk[$pd->peserta_didik_id] = $pd->deskripsi_mapel->where('asal', 1)->first()?->deskripsi_keterampilan;
+                  $deskripsi_pengetahuan_induk[$pd->peserta_didik_id] = $first->deskripsi_pengetahuan;
+                  $deskripsi_keterampilan_induk[$pd->peserta_didik_id] = $first->deskripsi_keterampilan;
                }
             }
          }
@@ -604,8 +616,9 @@ class DashboardController extends Controller
                   },
                   'deskripsi_mapel' => function($query) use ($sub){
                      $query->where('pembelajaran_id', $sub->pembelajaran_id);
+                     $query->where('asal', 0);
                   },
-            ])->orderBy('nama')->get();
+            ])->orderByRaw('LOWER(nama) ASC')->get();
             foreach($data_pd as $pd){
                $nilai_akhir = [];
                $deskripsi = [];
@@ -628,10 +641,49 @@ class DashboardController extends Controller
          foreach($nilai_akhir_sub as $peserta_didik_id => $nilai_akhir){
             $arr_nilai = Str::of(collect($nilai_akhir)->implode('nilai', ','))->explode(',');
             $merged_nilai = $arr_nilai->merge([$nilai_akhir_induk[$peserta_didik_id]]);
+            $filtered_pengetahuan = collect($nilai_akhir)->filter(function ($value) {
+               return !is_null($value['deskripsi_pengetahuan']);
+            });
+            $filtered_keterampilan = collect($nilai_akhir)->filter(function ($value) {
+               return !is_null($value['deskripsi_keterampilan']);
+            });
+            $deskripsi_pengetahuan = NULL;
+            if($filtered_pengetahuan->count()){
+               $deskripsi_pengetahuan = collect($nilai_akhir)->implode('deskripsi_pengetahuan', '. ');
+            }
+            $deskripsi_keterampilan = NULL;
+            if($filtered_keterampilan->count()){
+               $deskripsi_keterampilan = collect($nilai_akhir)->implode('deskripsi_keterampilan', '. ');
+            }
+            /*
+            */
+            /*$deskripsi_pengetahuan = $deskripsi_pengetahuan_induk[$peserta_didik_id];
+            $deskripsi_pengetahuan_sub = NULL;
+            if($filtered_pengetahuan->count()){
+               $deskripsi_pengetahuan_sub = collect($nilai_akhir)->implode('deskripsi_pengetahuan', ', ');
+            }
+            if($deskripsi_pengetahuan){
+               if($deskripsi_pengetahuan_sub){
+                  $deskripsi_pengetahuan.'. '.$deskripsi_pengetahuan_sub;
+               }
+            }
+
+            $deskripsi_keterampilan = $deskripsi_keterampilan_induk[$peserta_didik_id];
+            $deskripsi_keterampilan_sub = NULL;
+            if($filtered_keterampilan->count()){
+               $deskripsi_keterampilan_sub = collect($nilai_akhir)->implode('deskripsi_keterampilan', ', ');
+            }
+            if($deskripsi_keterampilan){
+               if($deskripsi_keterampilan_sub){
+                  $deskripsi_keterampilan.'. '.$deskripsi_keterampilan_sub;
+               }
+            }*/
             $nilai_sub[$peserta_didik_id] = [
                'nilai' => number_format($merged_nilai->avg(), 0),
-               'deskripsi_pengetahuan' => $deskripsi_pengetahuan_induk[$peserta_didik_id].'. '.collect($nilai_akhir)->implode('deskripsi_pengetahuan', ','),
-               'deskripsi_keterampilan' => $deskripsi_keterampilan_induk[$peserta_didik_id].'. '.collect($nilai_akhir)->implode('deskripsi_keterampilan', ','),
+               'deskripsi_pengetahuan' => $deskripsi_pengetahuan,
+               //$deskripsi_pengetahuan_induk[$peserta_didik_id].'. '.collect($nilai_akhir)->implode('deskripsi_pengetahuan', ','),
+               'deskripsi_keterampilan' => $deskripsi_keterampilan,
+               //$deskripsi_keterampilan_induk[$peserta_didik_id].'. '.collect($nilai_akhir)->implode('deskripsi_keterampilan', ','),
             ];
          }
          foreach($nilai_sub as $pd_id => $akhir){
@@ -640,19 +692,22 @@ class DashboardController extends Controller
             }])->where('peserta_didik_id', $pd_id)->where('rombongan_belajar_id', request()->rombongan_belajar_id)->first();
             if($anggota){
                if($akhir['deskripsi_pengetahuan'] || $akhir['deskripsi_keterampilan']){
-                  DeskripsiMataPelajaran::updateOrCreate(
-                     [
-                        'sekolah_id' => $anggota->sekolah_id,
-                        'anggota_rombel_id' => $anggota->anggota_rombel_id,
-                        'pembelajaran_id' => request()->pembelajaran_id,
-                        'asal' => 0,
-                     ],
-                     [
-                        'deskripsi_pengetahuan' => str_replace('. ,', '', $akhir['deskripsi_pengetahuan']),
-                        'deskripsi_keterampilan' => str_replace('. ,', '', $akhir['deskripsi_keterampilan']),
-                        'last_sync' => now()->subDays(30),
-                     ]
-                  );
+                  $deskripsi_pengetahuan = NULL;
+                  if($deskripsi_pengetahuan_induk[$pd_id]){
+                     if($akhir['deskripsi_pengetahuan']){
+                        $deskripsi_pengetahuan = $deskripsi_pengetahuan_induk[$pd_id].'. '.$akhir['deskripsi_pengetahuan'];
+                     }
+                  }
+                  $deskripsi_keterampilan = $deskripsi_keterampilan_induk[$pd_id];
+                  if($deskripsi_keterampilan){
+                     if($akhir['deskripsi_keterampilan']){
+                        $deskripsi_keterampilan.'. '.$akhir['deskripsi_keterampilan'];
+                     }
+                  }
+                  $this->save_desk(0, $anggota, [
+                     'pengetahuan' => $deskripsi_pengetahuan,
+                     'keterampilan' => $deskripsi_keterampilan,
+                  ]);
                }
                NilaiAkhir::updateOrCreate(
                   [
@@ -675,5 +730,20 @@ class DashboardController extends Controller
          ];
       }
       return response()->json($data);
+   }
+   private function save_desk($asal, $anggota, $deskripsi){
+      DeskripsiMataPelajaran::updateOrCreate(
+         [
+            'sekolah_id' => $anggota->sekolah_id,
+            'anggota_rombel_id' => $anggota->anggota_rombel_id,
+            'pembelajaran_id' => request()->pembelajaran_id,
+            'asal' => $asal,
+         ],
+         [
+            'deskripsi_pengetahuan' => $deskripsi['pengetahuan'],
+            'deskripsi_keterampilan' => $deskripsi['keterampilan'],
+            'last_sync' => now()->subDays(30),
+         ]
+      );
    }
 }
