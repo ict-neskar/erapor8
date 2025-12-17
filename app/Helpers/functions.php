@@ -838,6 +838,7 @@ function simpan_ekskul($data){
                 'rombongan_belajar_id'	=> $data->rombongan_belajar_id,
                 'alamat_ekskul' => $data->rombongan_belajar->ruang->nm_ruang, 
                 'last_sync'	=> Carbon::now()->subDays(30),
+                'deleted_at' => NULL,
             ]
         );
     }
