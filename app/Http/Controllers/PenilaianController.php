@@ -142,6 +142,7 @@ class PenilaianController extends Controller
                     NilaiAkhir::where('anggota_rombel_id', $anggota_rombel_id)->where('pembelajaran_id', request()->pembelajaran_id)->where('kompetensi_id', $kompetensi_id)->delete();
                 }
             }
+            //
             NilaiAkhir::whereNotIn('anggota_rombel_id', $anggota_id)->where('pembelajaran_id', request()->pembelajaran_id)->where('kompetensi_id', $kompetensi_id)->delete();
             $first = [];
             $last = [];

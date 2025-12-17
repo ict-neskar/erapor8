@@ -502,7 +502,6 @@ class CetakController extends Controller
 				});
 			},
 		])->orderBy('kelompok_id')->orderBy('no_urut')->get();
-		dd($pembelajaran);
 		$tanggal_rapor = get_setting('tanggal_rapor', request()->route('sekolah_id'), request()->route('semester_id'));
 		if($pd->kelas->semester->semester == 2 && $pd->kelas->tingkat >= 12){
 			$tanggal_rapor = get_setting('tanggal_rapor_kelas_akhir', request()->route('sekolah_id'), request()->route('semester_id'));
