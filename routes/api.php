@@ -121,6 +121,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
             Route::get('/', [ReferensiController::class, 'tujuan_pembelajaran']);
             Route::post('/delete', [ReferensiController::class, 'hapus_tp']);
             Route::post('/save', [ReferensiController::class, 'save_tp']);
+            Route::post('/cek-tp', [ReferensiController::class, 'cek_tp']);
         });
         Route::group(['prefix' => 'bobot-penilaian'], function () {
             Route::get('/', [ReferensiController::class, 'bobot_penilaian']);

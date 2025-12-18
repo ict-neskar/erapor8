@@ -549,6 +549,7 @@ function simpan_ptk($data){
                 'email' 				=> $data->email,
                 'is_dapodik'			=> 1,
                 'last_sync'				=> Carbon::now()->subDays(30),
+                'deleted_at' => NULL,
             ]
         );
         if(isset($data->rwy_pend_formal)){
@@ -583,6 +584,7 @@ function insert_jurusan($data){
             'level_bidang_id' => $data->level_bidang_id,
             'deleted_at' => $data->expired_date,
             'last_sync' => Carbon::now()->subDays(30),
+            'deleted_at' => NULL,
         ]
     );
 }
@@ -604,6 +606,7 @@ function insert_kurikulum($data){
             'jurusan_id'				=> ($jurusan) ? $data->jurusan_id : NULL,
             'deleted_at'				=> $data->expired_date,
             'last_sync'					=> Carbon::now()->subDays(30),
+            'deleted_at' => NULL,
         ]
     );
 }
@@ -620,6 +623,7 @@ function insert_jurusan_sp($data){
                 'jurusan_id' => $data->jurusan_id,
                 'nama_jurusan_sp' => $data->nama_jurusan_sp,
                 'last_sync' => Carbon::now()->subDays(30),
+                'deleted_at' => NULL,
             ]
         );
     }
@@ -655,6 +659,7 @@ function insert_rombel($data){
             'rombel_id_dapodik' => $data->rombongan_belajar_id,
             'deleted_at' => $soft_delete,
             'last_sync' => Carbon::now()->subDays(30),
+            'deleted_at' => NULL,
         ]
     );
 }
@@ -680,6 +685,7 @@ function simpan_mapel($data){
             'pilihan_evaluasi'			=> $data->pilihan_evaluasi,
             'deleted_at'				=> $data->expired_date,
             'last_sync'					=> Carbon::now()->subDays(30),
+            'deleted_at' => NULL,
         ]
     );
 }
@@ -716,6 +722,7 @@ function simpan_pembelajaran($data){
                 'is_dapodik'				=> 1,
                 'deleted_at'                => NULL,
                 'last_sync'					=> Carbon::now()->subDays(30),
+                'deleted_at' => NULL,
             ]
         );
         foreach($data->sub_mapel as $sup){
@@ -736,6 +743,7 @@ function simpan_anggota_rombel($data, $deleted_at){
             'anggota_rombel_id_dapodik' => $data->anggota_rombel_id,
             'deleted_at' => $deleted_at,
             'last_sync' => Carbon::now()->subDays(30),
+            'deleted_at' => NULL,
         ]
     );
 }
@@ -749,6 +757,7 @@ function simpan_pd_keluar($data){
             'sekolah_id' => request()->sekolah_id,
             'semester_id' => request()->semester_id,
             'last_sync' => Carbon::now()->subDays(30),
+            'deleted_at' => NULL,
         ]
     );
 }
@@ -810,6 +819,7 @@ function simpan_pd($data, $deleted_at){
             'deleted_at'        => NULL,
             'active' 			=> 1,
             'last_sync' => Carbon::now()->subDays(30),
+            'deleted_at' => NULL,
         ]
     );
     if(isset($data->anggota_rombel)){
@@ -875,6 +885,7 @@ function simpan_dudi($data){
             'website'			=> $data->website,
             'npwp'				=> $data->npwp,
             'last_sync' => Carbon::now()->subDays(30),
+            'deleted_at' => NULL,
         ]
     );
     foreach($data->mou as $mou){
@@ -903,6 +914,7 @@ function simpan_dudi($data){
                 'telp_cp'			=> $mou->telp_cp,
                 'jabatan_cp'		=> $mou->jabatan_cp,
                 'last_sync' => Carbon::now()->subDays(30),
+                'deleted_at' => NULL,
             ]
         );
         foreach($mou->akt_pd as $akt_pd){
@@ -921,6 +933,7 @@ function simpan_dudi($data){
                     'ket_akt'		=> $akt_pd->ket_akt,
                     'a_komunal'		=> $akt_pd->a_komunal,
                     'last_sync'		=> Carbon::now()->subDays(30),
+                    'deleted_at' => NULL,
                 ]
             );
             if($akt_pd->anggota_akt_pd){
@@ -941,6 +954,7 @@ function simpan_dudi($data){
                                     'nipd'				=> $anggota_akt_pd->nipd,
                                     'jns_peran_pd'		=> $anggota_akt_pd->jns_peran_pd,
                                     'last_sync' => Carbon::now()->subDays(30),
+                                    'deleted_at' => NULL,
                                 ]
                             );
                         }
@@ -963,6 +977,7 @@ function simpan_dudi($data){
                                 'ptk_id'			=> $bimbing_pd->ptk_id,
                                 'urutan_pembimbing'	=> $bimbing_pd->urutan_pembimbing,
                                 'last_sync' => Carbon::now()->subDays(30),
+                                'deleted_at' => NULL,
                             ]
                         );
                     }
