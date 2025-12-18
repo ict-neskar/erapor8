@@ -28,9 +28,11 @@ const props = defineProps({
 const emit = defineEmits([
   'update:isDialogVisible',
   'delete',
+  'close',
 ])
 const updateModelValue = val => {
   emit('update:isDialogVisible', val)
+  emit('close')
 }
 const deleteData = () => {
     emit('update:isDialogVisible', false)

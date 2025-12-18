@@ -253,7 +253,6 @@ const confirmTpDialog = async () => {
 }
 const confirmDelete = async (val) => {
   if (val) {
-    console.log('disini');
     await $api('/referensi/tujuan-pembelajaran/cek-tp', {
       method: 'POST',
       body: {
@@ -270,7 +269,9 @@ const confirmDelete = async (val) => {
     })
   }
 }
+const closeLoading = ref(false)
 const confirmClose = async () => {
+  closeLoading.value = true
   await fetchData();
 }
 const pembelajaranId = ref()
@@ -736,10 +737,11 @@ const getRombel = (tp_mapel) => {
       </template>
     </DefaultDialog>
     <ConfirmDialog v-model:isDialogVisible="isConfirmDialogVisible" v-model:isNotifVisible="isNotifVisible"
-      confirmation-question="Apakah Anda yakin?" :confirmation-text="confirmationText" :confirm-color="notif.color"
-      :confirm-title="notif.title" :confirm-msg="notif.text" @confirm="confirmDelete" @close="confirmClose" />
+      v-model:closeLoading="closeLoading" confirmation-question="Apakah Anda yakin?"
+      :confirmation-text="confirmationText" :confirm-color="notif.color" :confirm-title="notif.title"
+      :confirm-msg="notif.text" @confirm="confirmDelete" @close="confirmClose" />
     <CekTpDialog v-model:isDialogVisible="isCekTpDialogVisible" v-model:nilaiTp="nilaiTp" v-model:tpNilai="tpNilai"
-      v-model:tpMapel="tpMapel" v-model:tpPkl="tpPkl" @delete=confirmTpDialog />
+      v-model:tpMapel="tpMapel" v-model:tpPkl="tpPkl" @delete=confirmTpDialog @close="confirmClose" />
   </section>
 </template>
 <style lang="scss">
