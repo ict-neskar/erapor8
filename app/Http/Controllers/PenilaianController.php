@@ -297,6 +297,11 @@ class PenilaianController extends Controller
             $text = 'Nilai Ekstrakurikuler';
             $deleted = NilaiEkstrakurikuler::where(function($query){
                 $query->where('ekstrakurikuler_id', request()->ekstrakurikuler_id);
+                $query->whereHas('peserta_didik', function($query){
+                    $query->whereHas('anggota_rombel', function($query){
+                        $query->where('rombongan_belajar_id', request()->rombongan_belajar_id);
+                    });
+                });
                 if(request()->rombel_id_reguler){
                     $query->whereHas('peserta_didik', function($query){
                         $query->whereHas('anggota_rombel', function($query){
