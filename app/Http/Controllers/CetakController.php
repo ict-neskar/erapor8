@@ -58,7 +58,7 @@ class CetakController extends Controller
 				$query->where('jenis_rombel', 1);
 				$query->with(['sekolah' => function($query){
 					$query->with(['kepala_sekolah' => function($query){
-						$query->where('semester_id', semester_id());
+						$query->where('semester_id', request()->route('semester_id'));
 					}]);
 				}, 'kurikulum', 'wali_kelas']);
 			},
@@ -105,6 +105,13 @@ class CetakController extends Controller
 			}
 		}
 
+		// Remove school's logo for 2022 and below
+		$tahun_ajaran_prefix_raw = $pd->diterima ? Carbon::parse($pd->getAttributes()['diterima'])->format('Y') : '20'.substr($tahun_ajaran_id, 0, 2);
+		$tahun_ajaran_prefix = (int) $tahun_ajaran_prefix_raw;
+		if ($tahun_ajaran_prefix <= 2022) {
+			$logo_sekolah = null;
+		}
+
 		$params = [
 			'pd' => $pd,
 			'pas_foto'	=> $pas_foto,
@@ -120,6 +127,7 @@ class CetakController extends Controller
 			'margin_header' => 5,
 			'margin_footer' => 5,
 		]);
+
 		$pdf->getMpdf()->defaultfooterfontsize=7;
 		$pdf->getMpdf()->defaultfooterline=0;
 		$general_title = strtoupper($pd->nama).' - '.$pd->kelas->nama;
@@ -128,9 +136,13 @@ class CetakController extends Controller
 		$identitas_sekolah = view('cetak.identitas_sekolah', $params);
 		$identitas_peserta_didik = view('cetak.identitas_peserta_didik', $params);
 		$pdf->getMpdf()->WriteHTML($rapor_top);
-		$pdf->getMpdf()->WriteHTML($identitas_sekolah);
-		$pdf->getMpdf()->SetWatermarkImage($logo_sekolah, 0.2, array(80, 80));
-		$pdf->getMpdf()->showWatermarkImage = true;
+
+		if ($logo_sekolah !== null) {
+			$pdf->getMpdf()->SetWatermarkImage($logo_sekolah, 0.2, array(80, 80));
+			$pdf->getMpdf()->showWatermarkImage = true;
+		}
+		
+		// $pdf->getMpdf()->showWatermarkImage = true;
 		$pdf->getMpdf()->WriteHTML('<pagebreak />');
 		$pdf->getMpdf()->WriteHTML($identitas_peserta_didik);
 		return $pdf->stream(clean($general_title).'-IDENTITAS.pdf');
@@ -342,6 +354,7 @@ class CetakController extends Controller
 		);
 		//return view('cetak.rapor_nilai', $params);
 		//return view('cetak.rapor_catatan', $params);
+		
 		$pdf = PDF::loadView('cetak.blank', $params, [], [
 			'mode' => '+aCJK',
 			'autoScriptToLang' => true,
@@ -354,6 +367,7 @@ class CetakController extends Controller
 			'margin_header' => 5,
 			'margin_footer' => 5,
 		]);
+		
 		$pdf->getMpdf()->defaultfooterfontsize=7;
 		$pdf->getMpdf()->defaultfooterline=0;
 		$general_title = $get_siswa->peserta_didik->nama;
