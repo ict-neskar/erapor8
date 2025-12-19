@@ -136,13 +136,12 @@ class CetakController extends Controller
 		$identitas_sekolah = view('cetak.identitas_sekolah', $params);
 		$identitas_peserta_didik = view('cetak.identitas_peserta_didik', $params);
 		$pdf->getMpdf()->WriteHTML($rapor_top);
-		$pdf->getMpdf()->WriteHTML($identitas_sekolah);
+		$pdf->getMpdf()->WriteHTML($identitas_sekolah);		
 		if ($logo_sekolah !== null) {
 			$pdf->getMpdf()->SetWatermarkImage($logo_sekolah, 0.2, array(80, 80));
 			$pdf->getMpdf()->showWatermarkImage = true;
 		}
-		
-		$pdf->getMpdf()->showWatermarkImage = true;
+		// $pdf->getMpdf()->showWatermarkImage = true;
 		$pdf->getMpdf()->WriteHTML('<pagebreak />');
 		$pdf->getMpdf()->WriteHTML($identitas_peserta_didik);
 		return $pdf->stream(clean($general_title).'-IDENTITAS.pdf');
