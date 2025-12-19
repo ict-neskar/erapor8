@@ -757,7 +757,6 @@ function simpan_pd_keluar($data){
             'sekolah_id' => request()->sekolah_id,
             'semester_id' => request()->semester_id,
             'last_sync' => Carbon::now()->subDays(30),
-            'deleted_at' => NULL,
         ]
     );
 }

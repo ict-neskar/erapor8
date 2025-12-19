@@ -36,6 +36,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/', [DashboardController::class, 'index']);
         Route::post('/', [DashboardController::class, 'index']);
         Route::post('/wali', [DashboardController::class, 'wali']);
+        Route::post('/wali-matpil', [DashboardController::class, 'wali_matpil']);
         Route::post('/status-penilaian', [DashboardController::class, 'status_penilaian']);
         Route::post('/detil-penilaian', [DashboardController::class, 'detil_penilaian']);
         Route::post('/generate-nilai', [DashboardController::class, 'generate_nilai']);

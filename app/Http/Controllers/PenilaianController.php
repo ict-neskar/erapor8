@@ -493,6 +493,11 @@ class PenilaianController extends Controller
                 },
                 'single_deskripsi_mata_pelajaran' => function($query){
                     $query->where('pembelajaran_id', request()->pembelajaran_id);
+                    $query->where('asal', 0);
+                },
+                'deskripsi_mata_pelajaran' => function($query){
+                    $query->where('pembelajaran_id', request()->pembelajaran_id);
+                    $query->where('asal', 1);
                 },
                 'tp_kompeten' => function($query){
                     $query->whereHas('tp_mapel', function($query){
@@ -521,6 +526,7 @@ class PenilaianController extends Controller
         $data = [
             'data_siswa' => $data_siswa,
             'show_reset' => DeskripsiMataPelajaran::where('pembelajaran_id', request()->pembelajaran_id)->count(),
+            'sub_mapel' => Pembelajaran::where('induk_pembelajaran_id', request()->pembelajaran_id)->count(),
         ];
         return response()->json($data);
     }
