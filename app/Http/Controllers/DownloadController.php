@@ -188,28 +188,58 @@ class DownloadController extends Controller
 			'semester_id' => request()->route('semester_id'),
 		])->download($nama_file);
     }
-	public function pengguna($data, $sekolah_id, $semester_id){
+	// public function pengguna($data, $sekolah_id, $semester_id){
+	// 	$semester = Semester::find($semester_id);
+	// 	$users = User::where(function($query) use ($semester, $sekolah_id, $data){
+	// 		if($data == 'ptk'){
+	// 			$query->whereHasRole(['guru', 'tu'], $semester->nama);
+	// 		} else {
+	// 			$query->whereHasRole(['siswa'], $semester->nama);
+	// 		}
+	// 		$query->where('sekolah_id', $sekolah_id);
+	// 	})->orderBy('name')->get();
+	// 	$output = [];
+	// 	foreach($users as $user){
+	// 		$result = [];
+	// 		$password = NULL;
+	// 		if (Hash::check($user->default_password, $user->password)) {
+	// 			$password = $user->default_password;
+	// 		}
+	// 		$result['nama'] = $user->name;
+	// 		$result['email'] = $user->email;
+	// 		$result['password'] = $password;
+	// 		$output[] = $result;
+	// 	}
+	// 	return (new FastExcel($output))->download('pengguna-'.$data.'.xlsx');
+	// }
+
+	public function pengguna($data, $sekolah_id, $semester_id)
+	{
 		$semester = Semester::find($semester_id);
-		$users = User::where(function($query) use ($semester, $sekolah_id, $data){
-			if($data == 'ptk'){
-				$query->whereHasRole(['guru', 'tu'], $semester->nama);
-			} else {
-				$query->whereHasRole(['siswa'], $semester->nama);
-			}
-            $query->where('sekolah_id', $sekolah_id);
-        })->orderBy('name')->get();
-		$output = [];
-		foreach($users as $user){
-			$result = [];
-			$password = NULL;
-			if (Hash::check($user->default_password, $user->password)) {
-    			$password = $user->default_password;
-			}
-			$result['nama'] = $user->name;
-			$result['email'] = $user->email;
-			$result['password'] = $password;
-			$output[] = $result;
+		
+		$query = User::select('id', 'name', 'email', 'password', 'default_password')
+			->where('sekolah_id', $sekolah_id)
+			->orderBy('name');
+		
+		if ($data == 'ptk') {
+			$query->whereHasRole(['guru', 'tu'], $semester->nama);
+		} else {
+			$query->whereHasRole(['siswa'], $semester->nama);
 		}
-		return (new FastExcel($output))->download('pengguna-'.$data.'.xlsx');
+		
+		// Use generator for memory-efficient streaming
+		$generator = function () use ($query) {
+			foreach ($query->cursor() as $user) {
+				yield [
+					'nama' => $user->name,
+					'email' => $user->email,
+					'password' => Hash::check($user->default_password, $user->password) 
+						? $user->default_password 
+						: null,
+				];
+			}
+		};
+		
+		return (new FastExcel($generator()))->download('pengguna-' . $data . '.xlsx');
 	}
 }
