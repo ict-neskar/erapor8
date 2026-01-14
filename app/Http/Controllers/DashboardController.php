@@ -275,7 +275,32 @@ class DashboardController extends Controller
       return ['pembelajaran' => $result];
     }
     private function dashboard_siswa(){
-        $data = [];
+        $data = [
+         'pd' => Peserta_didik::with(['kelas' => function($query){
+            $query->where('jenis_rombel', 1);
+            $query->where('rombongan_belajar.semester_id', request()->semester_id);
+            $query->with([
+               'kurikulum',
+               'wali_kelas' => function($query){
+                  $query->select('guru_id', 'nama');
+               },
+               'pembelajaran' => function($query){
+                  $query->orderBy('mata_pelajaran_id');
+                  $query->with([
+                     'guru' => function($query){
+                        $query->select('guru_id', 'nama');
+                     }, 
+                     'pengajar' => function($query){
+                        $query->select('guru_id', 'nama');
+                     },
+                     'nilai_akhir_pengetahuan' => $this->callback(),
+                     'nilai_akhir_keterampilan' => $this->callback(),
+                     'nilai_akhir_kurmer' => $this->callback(),
+                  ]);
+               },
+            ]);
+         }])->where('peserta_didik_id', request()->user()->peserta_didik_id)->first()
+        ];
         return response()->json($data);
     }
     private function dashboard_user(){
