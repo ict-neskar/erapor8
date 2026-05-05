@@ -573,6 +573,7 @@ class CetakController extends Controller
 				$query->whereHas('anggota_rombel', function($query) use ($pd){
 					$query->where('peserta_didik_id', $pd->peserta_didik_id);
 				});
+				$query->where('asal', 0);
 			},
 		])->orderBy('kelompok_id')->orderBy('no_urut')->get();
 		$tanggal_rapor = get_setting('tanggal_rapor', request()->route('sekolah_id'), request()->route('semester_id'));
