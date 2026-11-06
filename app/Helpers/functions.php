@@ -1,9 +1,11 @@
 <?php
 set_time_limit(0);
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Str;
 use App\Models\Semester;
 use App\Models\Setting;
+use App\Models\Sekolah;
 use App\Models\Pembelajaran;
 use App\Models\Agama;
 use App\Models\MstWilayah;
@@ -51,7 +53,8 @@ function http_client($satuan, $data_sync){
     $response = Http::withOptions([
         'verify' => false,
     ])->withHeaders([
-        'x-api-key' => $data_sync['sekolah_id'],
+        'x-api-key'  => $data_sync['sekolah_id'],
+        'x-api-npsn' => $data_sync['npsn'] ?? NULL,
     ])->retry(3, 100)->post(config('erapor.api_url').$satuan, $data_sync);
     return $response->object();
 }
@@ -78,12 +81,18 @@ function getUpdaterID($sekolah_id, $npsn, $semester_id, $email){
         $getPengguna = Http::withToken(get_setting('token_dapodik', $sekolah_id))->get(get_setting('url_dapodik', $sekolah_id).'/WebService/getPengguna?npsn='.$npsn.'&semester_id='.$semester_id);
         if($getPengguna->successful()){
             $users = $getPengguna->object();
-            if($users){
+            if($users && isset($users->rows) && count($users->rows) > 0){
                 $pengguna = collect($users->rows);
                 $user_id = $pengguna->first(function ($value, $key) use ($email){
-                    return $value->username == $email;
+                    return strtolower($value->username) == strtolower($email);
                 });
-                $updater_id = $user_id->pengguna_id;
+                
+                if($user_id){
+                    $updater_id = $user_id->pengguna_id;
+                } else {
+                    // Fallback to the first user (usually the school admin) if email is not found
+                    $updater_id = $pengguna->first()->pengguna_id;
+                }
             }
         }
     } catch (\Throwable $th) {
@@ -605,7 +614,6 @@ function insert_jurusan($data){
             'jenjang_pendidikan_id' => $data->jenjang_pendidikan_id,
             'jurusan_induk' => ($jurusan_induk) ? $data->jurusan_induk : NULL,
             'level_bidang_id' => $data->level_bidang_id,
-            'deleted_at' => $data->expired_date,
             'last_sync' => Carbon::now()->subDays(30),
             'deleted_at' => NULL,
         ]
@@ -627,7 +635,6 @@ function insert_kurikulum($data){
             'total_sks'					=> $data->total_sks,
             'jenjang_pendidikan_id'		=> $data->jenjang_pendidikan_id,
             'jurusan_id'				=> ($jurusan) ? $data->jurusan_id : NULL,
-            'deleted_at'				=> $data->expired_date,
             'last_sync'					=> Carbon::now()->subDays(30),
             'deleted_at' => NULL,
         ]
@@ -680,7 +687,6 @@ function insert_rombel($data){
             'tingkat' => $data->tingkat_pendidikan_id,
             'jenis_rombel' => $data->jenis_rombel,
             'rombel_id_dapodik' => $data->rombongan_belajar_id,
-            'deleted_at' => $soft_delete,
             'last_sync' => Carbon::now()->subDays(30),
             'deleted_at' => NULL,
         ]
@@ -714,7 +720,6 @@ function simpan_mapel($data){
             'pilihan_kepengawasan'		=> $data->pilihan_kepengawasan,
             'pilihan_buku'				=> $data->pilihan_buku,
             'pilihan_evaluasi'			=> $data->pilihan_evaluasi,
-            'deleted_at'				=> $data->expired_date,
             'last_sync'					=> Carbon::now()->subDays(30),
             'deleted_at' => NULL,
         ]
@@ -751,9 +756,8 @@ function simpan_pembelajaran($data){
                 'nama_mata_pelajaran'		=> $data->nama_mata_pelajaran,
                 'kkm'						=> 0,
                 'is_dapodik'				=> 1,
-                'deleted_at'                => NULL,
                 'last_sync'					=> Carbon::now()->subDays(30),
-                'deleted_at' => NULL,
+                'deleted_at'                => NULL,
             ]
         );
         foreach($data->sub_mapel as $sup){
@@ -772,9 +776,8 @@ function simpan_anggota_rombel($data, $deleted_at){
             'rombongan_belajar_id' => $data->rombongan_belajar_id,
             'peserta_didik_id' => $data->peserta_didik_id,
             'anggota_rombel_id_dapodik' => $data->anggota_rombel_id,
-            'deleted_at' => $deleted_at,
             'last_sync' => Carbon::now()->subDays(30),
-            'deleted_at' => NULL,
+            'deleted_at' => $deleted_at,
         ]
     );
 }
@@ -800,6 +803,11 @@ function simpan_peserta_didik_aktif($data){
     simpan_pd($data, NULL);
 }
 function simpan_pd($data, $deleted_at){
+    static $pekerjaan_ids = null;
+    if ($pekerjaan_ids === null) {
+        $pekerjaan_ids = \Illuminate\Support\Facades\DB::table('ref.pekerjaan')->pluck('pekerjaan_id')->toArray();
+    }
+    
     $wilayah = NULL;
     if(isset($data->wilayah)){
         $wilayah = proses_wilayah($data->wilayah, TRUE);
@@ -820,7 +828,7 @@ function simpan_pd($data, $deleted_at){
             'peserta_didik_id_dapodik' => $data->peserta_didik_id,
             'sekolah_id'		=> request()->sekolah_id,
             'nama' 				=> $data->nama,
-            'no_induk' 			=> ($data->registrasi_peserta_didik->nipd) ? $data->registrasi_peserta_didik->nipd : 0,
+            'no_induk' 			=> (isset($data->registrasi_peserta_didik) && $data->registrasi_peserta_didik->nipd) ? $data->registrasi_peserta_didik->nipd : 0,
             'nisn' 				=> $data->nisn,
             'nik'               => $data->nik,
             'jenis_kelamin' 	=> ($data->jenis_kelamin) ?? 0,
@@ -837,23 +845,22 @@ function simpan_pd($data, $deleted_at){
             'kode_pos' 			=> ($data->kode_pos) ?? 0,
             'no_telp' 			=> ($data->nomor_telepon_rumah) ?? 0,
             'no_hp' 			=> ($data->nomor_telepon_seluler) ?? 0,
-            'sekolah_asal' 		=> ($data->registrasi_peserta_didik) ? $data->registrasi_peserta_didik->sekolah_asal : 0,
-            'diterima' 			=> ($data->registrasi_peserta_didik) ? $data->registrasi_peserta_didik->tanggal_masuk_sekolah : NULL,
-            'diterima_kelas'    => ($data->diterima_dikelas) ? ($data->diterima_dikelas->rombongan_belajar) ? $data->diterima_dikelas->rombongan_belajar->nama : NULL : NULL,
+            'sekolah_asal' 		=> (isset($data->registrasi_peserta_didik)) ? $data->registrasi_peserta_didik->sekolah_asal : 0,
+            'diterima' 			=> (isset($data->registrasi_peserta_didik)) ? $data->registrasi_peserta_didik->tanggal_masuk_sekolah : NULL,
+            'diterima_kelas'    => ($data->diterima_dikelas ?? false) ? (($data->diterima_dikelas->rombongan_belajar ?? false) ? $data->diterima_dikelas->rombongan_belajar->nama : NULL) : NULL,
             'kode_wilayah' 		=> $data->kode_wilayah,
             'email' 			=> $data->email,
             'nama_ayah' 		=> ($data->nama_ayah) ?? 0,
             'nama_ibu' 			=> ($data->nama_ibu_kandung) ?? 0,
-            'kerja_ayah' 		=> ($data->pekerjaan_id_ayah) ? $data->pekerjaan_id_ayah : 1,
-            'kerja_ibu' 		=> ($data->pekerjaan_id_ibu) ? $data->pekerjaan_id_ibu : 1,
+            'kerja_ayah' 		=> (isset($data->pekerjaan_id_ayah) && in_array($data->pekerjaan_id_ayah, $pekerjaan_ids)) ? $data->pekerjaan_id_ayah : 1,
+            'kerja_ibu' 		=> (isset($data->pekerjaan_id_ibu) && in_array($data->pekerjaan_id_ibu, $pekerjaan_ids)) ? $data->pekerjaan_id_ibu : 1,
             'nama_wali' 		=> ($data->nama_wali) ?? 0,
             'alamat_wali' 		=> ($data->alamat_jalan) ?? 0,
             'telp_wali' 		=> ($data->nomor_telepon_seluler) ?? 0,
-            'kerja_wali' 		=> ($data->pekerjaan_id_wali) ? $data->pekerjaan_id_wali : 1,
-            'deleted_at'        => NULL,
+            'kerja_wali' 		=> (isset($data->pekerjaan_id_wali) && in_array($data->pekerjaan_id_wali, $pekerjaan_ids)) ? $data->pekerjaan_id_wali : 1,
             'active' 			=> 1,
             'last_sync' => Carbon::now()->subDays(30),
-            'deleted_at' => NULL,
+            'deleted_at' => $deleted_at,
         ]
     );
     if(isset($data->anggota_rombel)){
@@ -880,11 +887,13 @@ function simpan_ekskul($data){
                 'nama_ekskul' => $data->nm_ekskul,
                 'is_dapodik' => 1,
                 'rombongan_belajar_id'	=> $data->rombongan_belajar_id,
-                'alamat_ekskul' => $data->rombongan_belajar->ruang->nm_ruang, 
+                'alamat_ekskul' => $data->rombongan_belajar->ruang?->nm_ruang ?? NULL, 
                 'last_sync'	=> Carbon::now()->subDays(30),
                 'deleted_at' => NULL,
             ]
         );
+    } else {
+        abort(500, 'Sinkronisasi Ekskul Gagal: Pembina (PTK) tidak ditemukan di database eRapor. ID PTK Dapodik: ' . ($data->rombongan_belajar->ptk_id ?? 'NULL') . ' | Nama Ekskul: ' . ($data->nm_ekskul ?? 'NULL') . ' | ID Ekskul: ' . ($data->id_kelas_ekskul ?? 'NULL') . '. Pastikan data Guru/PTK tersebut sudah disinkronkan ke eRapor terlebih dahulu.');
     }
 }
 function simpan_anggota_ekskul($data){
